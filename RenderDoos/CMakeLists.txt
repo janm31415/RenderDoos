@@ -4,6 +4,7 @@ set_property(CACHE RENDERDOOS_TARGET PROPERTY STRINGS x64 arm)
 
 set(HDRS
 float.h
+material.h
 render_context.h
 render_context_gl.h
 render_engine.h
@@ -12,6 +13,7 @@ types.h
 
 set(SRCS
 float.cpp
+material.cpp
 render_context.cpp
 render_context_gl.cpp
 render_engine.cpp
