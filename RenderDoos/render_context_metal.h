@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <vector>
 
-namespace knapzak
+namespace RenderDoos
   {
   
   #define MAX_PIPELINESTATE_CACHE 1024
