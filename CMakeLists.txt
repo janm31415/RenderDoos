@@ -1,0 +1,30 @@
+cmake_minimum_required(VERSION 3.10)
+
+set(CMAKE_OSX_DEPLOYMENT_TARGET "14.00")
+
+project (RenderDoos)
+
+option(RENDERDOOS_FOR_IOS "Set to true when building for ios" OFF)
+
+
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib")
+set(CMAKE_PDB_OUTPUT_DIRECTORY     "${CMAKE_CURRENT_BINARY_DIR}/bin")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+#set(CMAKE_CXX_EXTENSIONS OFF)
+
+if (RENDERDOOS_FOR_IOS)
+set(CMAKE_OSX_SYSROOT iphoneos)
+endif (RENDERDOOS_FOR_IOS)
+
+
+add_subdirectory(RenderDoos)
+add_subdirectory(glew)
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+set_target_properties (glew PROPERTIES FOLDER glew)
+
