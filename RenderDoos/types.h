@@ -1,9 +1,5 @@
 #pragma once
 
-#include <stdint.h>
-
-#include <string>
-
 namespace RenderDoos
   {
 
@@ -23,4 +19,4 @@ namespace RenderDoos
     texture_format_depth = 11
     };
 
-  } // namespace stacklab
+  } // namespace RenderDoos

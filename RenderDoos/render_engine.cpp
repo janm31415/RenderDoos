@@ -306,4 +306,4 @@ namespace RenderDoos
     return _context->get_query_result(handle);
     }
 
-  } // namespace knapzak
+  } // namespace RenderDoos
