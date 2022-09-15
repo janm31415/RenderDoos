@@ -26,5 +26,5 @@ add_subdirectory(glew)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-set_target_properties (glew PROPERTIES FOLDER glew)
+set_target_properties (RenderDoosGlew PROPERTIES FOLDER glew)
 

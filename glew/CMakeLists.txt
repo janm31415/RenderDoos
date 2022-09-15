@@ -16,14 +16,14 @@ set(CMAKE_C_FLAGS_RELEASE "/W4 /MP /GF /O2 /Ob2 /Oi /Ot /MD /Zi /DNDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "/W4 /MP /GF /O2 /Ob2 /Oi /Ot /MD /Zi /DNDEBUG")
 endif(WIN32)
 
-add_library(glew STATIC ${HDRS} ${SRCS})
+add_library(RenderDoosGlew STATIC ${HDRS} ${SRCS})
 source_group("Header Files" FILES ${hdrs})
 source_group("Source Files" FILES ${srcs})
 
-target_include_directories(glew
+target_include_directories(RenderDoosGlew
     PRIVATE
     )	
 	
-target_link_libraries(glew
+target_link_libraries(RenderDoosGlew
     PRIVATE		
     )	
