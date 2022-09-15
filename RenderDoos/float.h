@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef RENDERDOOS_FOR_ARM
+#ifdef RENDERDOOS_ARM
 #include "sse2neon.h"
 #else
 #include <immintrin.h>

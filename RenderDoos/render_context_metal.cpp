@@ -11,7 +11,7 @@
 #include <cassert>
 #include <stdexcept>
 
-namespace knapzak
+namespace RenderDoos
 {
 
 namespace
@@ -259,7 +259,7 @@ bool render_context_metal::update_texture(int32_t handle, const uint8_t* data)
   if (tex->flags == 0)
     return false;
   
-  if (tex->format == knapzak::texture_format_rgba8 || tex->format == knapzak::texture_format_bgra8) {
+  if (tex->format == texture_format_rgba8 || tex->format == texture_format_bgra8) {
     
     MTL::Texture* p_tex = (MTL::Texture*)tex->metal_texture;
     p_tex->replaceRegion(MTL::Region(0, 0, tex->w, tex->h), 0, data, tex->w*4*sizeof(uint8_t));
@@ -280,7 +280,7 @@ bool render_context_metal::update_texture(int32_t handle, const uint16_t* data)
   if (tex->flags == 0)
     return false;
   
-  if (tex->format == knapzak::texture_format_rgba8) {
+  if (tex->format == texture_format_rgba8) {
     uint8_t* bytes = new uint8_t[tex->w * tex->h * 4];
     uint8_t* d = (uint8_t*)bytes;
     const uint16_t* s = (const uint16_t*)data;
@@ -300,7 +300,7 @@ bool render_context_metal::update_texture(int32_t handle, const uint16_t* data)
     
     delete [] bytes;
     return true;
-  } else if (tex->format == knapzak::texture_format_rgba32f)
+  } else if (tex->format == texture_format_rgba32f)
   {
     float* bytes = new float[tex->w * tex->h * 4];
     float* d = (float*)bytes;
@@ -322,7 +322,7 @@ bool render_context_metal::update_texture(int32_t handle, const uint16_t* data)
     delete [] bytes;
     return true;
   }
-  else if (tex->format == knapzak::texture_format_rgba16)
+  else if (tex->format == texture_format_rgba16)
   {
     uint16_t* bytes = new uint16_t[tex->w * tex->h * 4];
     const uint16_t* s = (const uint16_t*)data;
@@ -339,7 +339,7 @@ bool render_context_metal::update_texture(int32_t handle, const uint16_t* data)
     delete [] bytes;
     return true;
   }
-  else if (tex->format == knapzak::texture_format_rgba8ui)
+  else if (tex->format == texture_format_rgba8ui)
   {
     uint8_t* bytes = new uint8_t[tex->w * tex->h * 4];
     uint8_t* d = (uint8_t*)bytes;
@@ -361,7 +361,7 @@ bool render_context_metal::update_texture(int32_t handle, const uint16_t* data)
     delete [] bytes;
     return true;
   }
-  else if (tex->format == knapzak::texture_format_r32ui)
+  else if (tex->format == texture_format_r32ui)
   {
     uint32_t* bytes = new uint32_t[tex->w * tex->h];
     uint32_t* d = (uint32_t*)bytes;
@@ -379,7 +379,7 @@ bool render_context_metal::update_texture(int32_t handle, const uint16_t* data)
     
     delete [] bytes;
     return true;
-  } else if (tex->format == knapzak::texture_format_r32i)
+  } else if (tex->format == texture_format_r32i)
   {
     int32_t* bytes = new int32_t[tex->w * tex->h];
     int32_t* d = (int32_t*)bytes;
@@ -397,7 +397,7 @@ bool render_context_metal::update_texture(int32_t handle, const uint16_t* data)
     
     delete [] bytes;
     return true;
-  } else if (tex->format == knapzak::texture_format_r32f)
+  } else if (tex->format == texture_format_r32f)
   {
     float* bytes = new float[tex->w * tex->h];
     float* d = (float*)bytes;
@@ -415,7 +415,7 @@ bool render_context_metal::update_texture(int32_t handle, const uint16_t* data)
     
     delete [] bytes;
     return true;
-  } else if (tex->format == knapzak::texture_format_r8ui)
+  } else if (tex->format == texture_format_r8ui)
   {
     uint8_t* bytes = new uint8_t[tex->w * tex->h];
     uint8_t* d = (uint8_t*)bytes;
@@ -433,7 +433,7 @@ bool render_context_metal::update_texture(int32_t handle, const uint16_t* data)
     
     delete [] bytes;
     return true;
-  } else if (tex->format == knapzak::texture_format_r8i)
+  } else if (tex->format == texture_format_r8i)
   {
     int8_t* bytes = new int8_t[tex->w * tex->h];
     int8_t* d = (int8_t*)bytes;
@@ -530,14 +530,14 @@ void render_context_metal::get_data_from_texture(int32_t handle, void* data, int
   if (tex->flags == 0)
     return false;
   
-  if (tex->format == knapzak::texture_format_rgba8)
+  if (tex->format == texture_format_rgba8)
   {
     if (size < tex->w * tex->h * 4)
       return;
     MTL::Texture* p_tex = (MTL::Texture*)tex->metal_texture;
     p_tex->getBytes(data, tex->w*4*sizeof(uint8_t), MTL::Region(0, 0, tex->w, tex->h), 0);
   }
-  else if (tex->format == knapzak::texture_format_rgba32f)
+  else if (tex->format == texture_format_rgba32f)
   {
     if (size < tex->w * tex->h * 4)
       return;
@@ -558,33 +558,33 @@ void render_context_metal::get_data_from_texture(int32_t handle, void* data, int
     }
     
     delete [] bytes;
-  } else if (tex->format == knapzak::texture_format_rgba16)
+  } else if (tex->format == texture_format_rgba16)
   {
     if (size < tex->w * tex->h * 8)
       return;
     MTL::Texture* p_tex = (MTL::Texture*)tex->metal_texture;
     p_tex->getBytes(data, tex->w*4*sizeof(uint16_t), MTL::Region(0, 0, tex->w, tex->h), 0);
   }
-  else if (tex->format == knapzak::texture_format_rgba8ui)
+  else if (tex->format == texture_format_rgba8ui)
   {
     if (size < tex->w * tex->h * 4)
       return;
     MTL::Texture* p_tex = (MTL::Texture*)tex->metal_texture;
     p_tex->getBytes(data, tex->w*4*sizeof(uint8_t), MTL::Region(0, 0, tex->w, tex->h), 0);
   }
-  else if (tex->format == knapzak::texture_format_r32f)
+  else if (tex->format == texture_format_r32f)
   {
     if (size < tex->w * tex->h * 4)
       return;
     MTL::Texture* p_tex = (MTL::Texture*)tex->metal_texture;
     p_tex->getBytes(data, tex->w*sizeof(float), MTL::Region(0, 0, tex->w, tex->h), 0);
-  } else if (tex->format == knapzak::texture_format_r32ui || tex->format == knapzak::texture_format_r32i)
+  } else if (tex->format == texture_format_r32ui || tex->format == texture_format_r32i)
   {
     if (size < tex->w * tex->h * 4)
       return;
     MTL::Texture* p_tex = (MTL::Texture*)tex->metal_texture;
     p_tex->getBytes(data, tex->w*sizeof(uint32_t), MTL::Region(0, 0, tex->w, tex->h), 0);
-  } else if (tex->format == knapzak::texture_format_r8ui || tex->format == knapzak::texture_format_r8i)
+  } else if (tex->format == texture_format_r8ui || tex->format == texture_format_r8i)
   {
     if (size < tex->w * tex->h)
       return;
@@ -1280,4 +1280,4 @@ uint64_t render_context_metal::get_query_result(int32_t handle)
   return q->metal_timestamp;
 }
 
-} // namespace knapzak
+} // namespace RenderDoos
