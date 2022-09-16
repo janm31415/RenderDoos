@@ -18,6 +18,7 @@ namespace RenderDoos
       virtual void renderpass_begin(const renderpass_descriptor& descr);
       virtual void renderpass_end();
 
+      virtual bool update_texture(int32_t handle, const float* data);
       virtual int32_t add_texture(int32_t w, int32_t h, int32_t format, const uint16_t* data, int32_t flags);
       virtual bool update_texture(int32_t handle, const uint16_t* data);
       virtual int32_t add_texture(int32_t w, int32_t h, int32_t format, const uint8_t* data, int32_t flags);

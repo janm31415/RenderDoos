@@ -101,6 +101,11 @@ namespace RenderDoos
     return _context->update_texture(handle, data);
     }
 
+  bool render_engine::update_texture(int32_t handle, const float* data)
+    {
+    return _context->update_texture(handle, data);
+    }
+
   int32_t render_engine::add_texture(int32_t w, int32_t h, int32_t format, const uint16_t* data, int32_t usage_flags)
     {
     return _context->add_texture(w, h, format, data, usage_flags);

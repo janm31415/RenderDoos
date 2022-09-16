@@ -243,6 +243,7 @@ namespace RenderDoos
       virtual bool update_texture(int32_t handle, const uint16_t* data) = 0;
       virtual int32_t add_texture(int32_t w, int32_t h, int32_t format, const uint8_t* data, int32_t usage_flags) = 0;
       virtual bool update_texture(int32_t handle, const uint8_t* data) = 0;
+      virtual bool update_texture(int32_t handle, const float* data) = 0;
       virtual void remove_texture(int32_t handle) = 0;
       virtual void bind_texture_to_channel(int32_t handle, int32_t channel, int32_t flags) = 0;
       virtual const texture* get_texture(int32_t handle) const = 0;

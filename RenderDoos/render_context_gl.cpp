@@ -150,6 +150,28 @@ namespace RenderDoos
     glClear(mask);
     }
 
+  bool render_context_gl::update_texture(int32_t handle, const float* data)
+    {
+    if (handle < 0 || handle >= MAX_TEXTURE)
+      return false;
+    if (data == nullptr)
+      return false;
+    texture* tex = &_textures[handle];
+    if (tex->flags == 0)
+      return false;
+
+    if (tex->format == texture_format_r32f)
+      {
+      glBindTexture(GL_TEXTURE_2D, tex->gl_texture_id);
+      glPixelStorei(GL_PACK_ALIGNMENT, 1);
+      glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // opengl by default aligns rows on 4 bytes I think    
+      glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, tex->w, tex->h, GL_RED, GL_FLOAT, data);
+      glCheckError();
+      return true;
+      }
+    return false;
+    }
+
   bool render_context_gl::update_texture(int32_t handle, const uint8_t* data)
     {
     if (handle < 0 || handle >= MAX_TEXTURE)
@@ -314,10 +336,12 @@ namespace RenderDoos
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // opengl by default aligns rows on 4 bytes I think 
         glTexStorage2D(GL_TEXTURE_2D, 1, formats[tex->format], w, h);
         glCheckError();
-        if (bytes_per_channel == 1)
-          update_texture(i, (const uint8_t*)data);
-        else
-          update_texture(i, (const uint16_t*)data);
+        switch (bytes_per_channel)
+          {
+          case 1: update_texture(i, (const uint8_t*)data); break;
+          case 2: update_texture(i, (const uint16_t*)data); break;
+          case 4: update_texture(i, (const float*)data); break;
+          }
         return i;
         }
       ++tex;
