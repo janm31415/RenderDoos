@@ -270,6 +270,27 @@ bool render_context_metal::update_texture(int32_t handle, const uint8_t* data)
   return false;
 }
 
+bool render_context_metal::update_texture(int32_t handle, const float* data)
+{
+  if (handle < 0 || handle >= MAX_TEXTURE)
+    return false;
+  if (data == nullptr)
+    return false;
+  texture* tex = &_textures[handle];
+  if (tex->flags == 0)
+    return false;
+  
+  if (tex->format == texture_format_r32f) {
+    
+    MTL::Texture* p_tex = (MTL::Texture*)tex->metal_texture;
+    p_tex->replaceRegion(MTL::Region(0, 0, tex->w, tex->h), 0, data, tex->w*sizeof(float));
+    
+    return true;
+  }
+  
+  return false;
+}
+
 bool render_context_metal::update_texture(int32_t handle, const uint16_t* data)
 {
   if (handle < 0 || handle >= MAX_TEXTURE)
