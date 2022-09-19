@@ -102,9 +102,8 @@ void main()
   mat4 vproj = mat4(ViewProject[0], ViewProject[1], ViewProject[2], ViewProject[3]);  
   mat4 cam = mat4(Camera[0], Camera[1], Camera[2], Camera[3]);  
   gl_Position = vproj*vec4(vPosition.xyz,1);
-  Normal = (cam*vec4(vNormal,0)).xyz;
-  Color = vec4(float(vColor&uint(255))/255.f, float((vColor>>8)&uint(255))/255.f, float((vColor>>16)&uint(255))/255.f, float((vColor>>24)&uint(255))/255.f);
-  //Color = vec4(float((vColor>>24)&uint(255))/255.f, float((vColor>>16)&uint(255))/255.f, float((vColor>>8)&uint(255))/255.f, float((vColor)&uint(255))/255.f);
+  Normal = (cam*vec4(vNormal,0)).xyz;  
+  Color = vec4(float(vColor&uint(255))/255.f, float((vColor>>8)&uint(255))/255.f, float((vColor>>16)&uint(255))/255.f, float((vColor>>24)&uint(255))/255.f);  
   }
 )");
     }

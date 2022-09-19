@@ -810,7 +810,20 @@ namespace RenderDoos
     while (decl->stride)
       {
       glEnableVertexAttribArray(decl->location);
-      glVertexAttribPointer(decl->location, decl->tupleSize, decl->type, GL_FALSE, decl->stride, reinterpret_cast<const void*>(intptr_t(decl->offset)));
+      switch (decl->type)
+        {
+        case GL_UNSIGNED_BYTE:
+        case GL_BYTE:
+        case GL_UNSIGNED_SHORT:
+        case GL_SHORT:
+        case GL_UNSIGNED_INT:
+        case GL_INT:
+          glVertexAttribIPointer(decl->location, decl->tupleSize, decl->type, decl->stride, reinterpret_cast<const void*>(intptr_t(decl->offset)));
+          break;
+        default:
+          glVertexAttribPointer(decl->location, decl->tupleSize, decl->type, GL_FALSE, decl->stride, reinterpret_cast<const void*>(intptr_t(decl->offset)));
+          break;
+        }
       ++decl;
       }
     glCheckError();
