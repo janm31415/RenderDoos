@@ -45,7 +45,7 @@ namespace RenderDoos
       const texture* get_texture(int32_t handle) const;
       void get_data_from_texture(int32_t handle, void* data, int32_t size);
 
-      int32_t add_geometry(int32_t vertex_declaration_type); // VERTEX_STANDARD or VERTEX_COMPACT
+      int32_t add_geometry(int32_t vertex_declaration_type); // VERTEX_STANDARD or VERTEX_COMPACT or VERTEX_COLOR
       void remove_geometry(int32_t handle);
 
       int32_t add_buffer_object(const void* data, int32_t size);

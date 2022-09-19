@@ -77,6 +77,14 @@ namespace RenderDoos
           { 0, 0, 0, 0, 0} // end
       };
 
+    static gl_buffer_declaration gl_buffer_declaration_color[] =
+      {
+          { 0, GL_FLOAT, 0, 3, sizeof(GLfloat) * 7}, // x y z
+          { 1, GL_FLOAT, sizeof(GLfloat) * 3, 3, sizeof(GLfloat) * 7}, // nx ny nz
+          { 2, GL_UNSIGNED_INT, sizeof(GLfloat) * 6, 1, sizeof(GLfloat) * 7}, // c0          
+          { 0, 0, 0, 0, 0} // end
+      };
+
     struct gl_buffer_declaration_table_struct
       {
       int32_t size;                       // size in bytes
@@ -88,6 +96,7 @@ namespace RenderDoos
         {0, 0},
         {32, gl_buffer_declaration_standard},
         {16, gl_buffer_declaration_compact},
+        {28, gl_buffer_declaration_color},
       };
     }
 
@@ -494,7 +503,7 @@ namespace RenderDoos
 
   int32_t render_context_gl::add_geometry(int32_t vertex_declaration_type)
     {
-    if (vertex_declaration_type < 1 || vertex_declaration_type > 2)
+    if (vertex_declaration_type < 1 || vertex_declaration_type > 3)
       return -1;
     geometry_handle* gh = _geometry_handles;
     for (int32_t i = 0; i < MAX_GEOMETRY; ++i)

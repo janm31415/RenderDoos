@@ -82,6 +82,122 @@ void main()
     engine->bind_uniform(shader_program_handle, vp_handle);
     }
 
+
+  ///////////////////////////////////////////////////////////////////////
+
+  static std::string get_vertex_colored_material_vertex_shader()
+    {
+    return std::string(R"(#version 330 core
+layout (location = 0) in vec3 vPosition;
+layout (location = 1) in vec3 vNormal;
+layout (location = 2) in uint vColor;
+uniform vec4 ViewProject[4]; // columns
+uniform vec4 Camera[4]; // columns
+
+out vec3 Normal;
+out vec4 Color;
+
+void main() 
+  {
+  mat4 vproj = mat4(ViewProject[0], ViewProject[1], ViewProject[2], ViewProject[3]);  
+  mat4 cam = mat4(Camera[0], Camera[1], Camera[2], Camera[3]);  
+  gl_Position = vproj*vec4(vPosition.xyz,1);
+  Normal = (cam*vec4(vNormal,0)).xyz;
+  Color = vec4(float(vColor&uint(255))/255.f, float((vColor>>8)&uint(255))/255.f, float((vColor>>16)&uint(255))/255.f, float((vColor>>24)&uint(255))/255.f);
+  }
+)");
+    }
+
+  static std::string get_vertex_colored_material_fragment_shader()
+    {
+    return std::string(R"(#version 330 core
+out vec4 FragColor;
+  
+in vec3 Normal;
+in vec4 Color;
+
+uniform vec3 LightDir;
+uniform float Ambient;
+
+void main()
+  {
+  float l = clamp(dot(Normal,LightDir), 0, 1.0 - Ambient) + Ambient;
+  vec4 clr = Color*l;
+  FragColor = clr;
+  }
+)");
+    }
+
+  vertex_colored_material::vertex_colored_material()
+    {
+    vs_handle = -1;
+    fs_handle = -1;
+    shader_program_handle = -1;
+    ambient = 0.2f;
+    vp_handle = -1;
+    cam_handle = -1;
+    light_dir_handle = -1;
+    ambient_handle = -1;
+    }
+
+  vertex_colored_material::~vertex_colored_material()
+    {
+    }
+
+  void vertex_colored_material::set_ambient(float a)
+    {
+    ambient = a;
+    }
+
+  void vertex_colored_material::destroy(render_engine* engine)
+    {
+    engine->remove_program(shader_program_handle);
+    engine->remove_shader(vs_handle);
+    engine->remove_shader(fs_handle);
+    engine->remove_uniform(vp_handle);
+    engine->remove_uniform(cam_handle);
+    engine->remove_uniform(light_dir_handle);
+    engine->remove_uniform(ambient_handle);
+    }
+
+  void vertex_colored_material::compile(render_engine* engine)
+    {
+    if (engine->get_renderer_type() == renderer_type::METAL)
+      {
+      vs_handle = engine->add_shader(nullptr, SHADER_VERTEX, "vertex_colored_material_vertex_shader");
+      fs_handle = engine->add_shader(nullptr, SHADER_FRAGMENT, "vertex_colored_material_fragment_shader");
+      }
+    else if (engine->get_renderer_type() == renderer_type::OPENGL)
+      {
+      vs_handle = engine->add_shader(get_vertex_colored_material_vertex_shader().c_str(), SHADER_VERTEX, nullptr);
+      fs_handle = engine->add_shader(get_vertex_colored_material_fragment_shader().c_str(), SHADER_FRAGMENT, nullptr);
+      }   
+    shader_program_handle = engine->add_program(vs_handle, fs_handle);
+    vp_handle = engine->add_uniform("ViewProject", uniform_type::vec4, 4);
+    cam_handle = engine->add_uniform("Camera", uniform_type::vec4, 4);
+    light_dir_handle = engine->add_uniform("LightDir", uniform_type::vec3, 1);
+    ambient_handle = engine->add_uniform("Ambient", uniform_type::real, 1);
+    }
+
+  void vertex_colored_material::bind(render_engine* engine)
+    {
+    engine->bind_program(shader_program_handle);
+    const auto& ld = engine->get_light_dir();
+
+    engine->set_uniform(vp_handle, (void*)&engine->get_view_project());
+    engine->set_uniform(cam_handle, (void*)&engine->get_camera_space());
+    engine->set_uniform(light_dir_handle, (void*)&ld);    
+    engine->set_uniform(ambient_handle, (void*)&ambient);
+
+    engine->bind_uniform(shader_program_handle, vp_handle);
+    engine->bind_uniform(shader_program_handle, cam_handle);
+    engine->bind_uniform(shader_program_handle, light_dir_handle);
+    engine->bind_uniform(shader_program_handle, ambient_handle);
+    }
+
+
+  ///////////////////////////////////////////////////////////////////////
+
   static std::string get_simple_material_vertex_shader()
     {
     return std::string(R"(#version 330 core
@@ -244,6 +360,8 @@ void main()
       engine->bind_texture_to_channel(dummy_tex_handle, 0, texture_flags);
       }
     }
+
+  ///////////////////////////////////////////////////////////
 
   static std::string get_shadertoy_material_vertex_shader()
     {

@@ -32,6 +32,26 @@ namespace RenderDoos
       int32_t vp_handle;
     };
 
+  class vertex_colored_material : public material
+    {
+    public:
+      vertex_colored_material();
+      virtual ~vertex_colored_material();
+
+      void set_ambient(float a);
+
+      virtual void compile(render_engine* engine);
+      virtual void bind(render_engine* engine);
+      virtual void destroy(render_engine* engine);
+
+    private:
+      int32_t vs_handle, fs_handle;
+      int32_t shader_program_handle;
+      float ambient;
+      int32_t texture_flags;
+      int32_t vp_handle, cam_handle, light_dir_handle, ambient_handle; // uniforms
+    };
+
   class simple_material : public material
     {
     public:

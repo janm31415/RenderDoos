@@ -38,6 +38,7 @@ namespace RenderDoos
 
 #define VERTEX_STANDARD  1   // pos,normal,tex0
 #define VERTEX_COMPACT   2   // pos,color
+#define VERTEX_COLOR     3   // pos,normal,color
 
 #define SHADER_VERTEX 1
 #define SHADER_FRAGMENT 2
@@ -56,6 +57,13 @@ namespace RenderDoos
   struct vertex_compact // 16 bytes
     {
     float x, y, z;
+    uint32_t c0;
+    };
+
+  struct vertex_color // 28 bytes
+    {
+    float x, y, z;
+    float nx, ny, nz;
     uint32_t c0;
     };
 
@@ -249,7 +257,7 @@ namespace RenderDoos
       virtual const texture* get_texture(int32_t handle) const = 0;
       virtual void get_data_from_texture(int32_t handle, void* data, int32_t size) = 0;
       
-      virtual int32_t add_geometry(int32_t vertex_declaration_type) = 0; // VERTEX_STANDARD or VERTEX_COMPACT
+      virtual int32_t add_geometry(int32_t vertex_declaration_type) = 0; // VERTEX_STANDARD or VERTEX_COMPACT or VERTEX_COLOR
       virtual void remove_geometry(int32_t handle) = 0;
 
       virtual int32_t add_render_buffer() = 0;
