@@ -29,6 +29,40 @@ fragment float4 compact_material_fragment_shader(const VertexCompactOut vertexIn
    return vertexIn.color;
 }
 
+struct VertexColoredIn {
+  packed_float3 position;
+  packed_float3 normal;
+  int color;
+};
+
+struct VertexColoredMaterialUniforms {
+  float4x4 view_projection_matrix;
+  float4x4 camera_matrix;
+  float3 light;
+  float ambient;
+};
+
+struct VertexColoredOut {
+  float4 position [[position]];
+  float3 normal;
+  float4 color;
+};
+
+vertex VertexColoredOut vertex_colored_material_vertex_shader(const device VertexColoredIn *vertices [[buffer(0)]], uint vertexId [[vertex_id]], constant VertexColoredMaterialUniforms& input [[buffer(1)]]) {
+  float4 pos(vertices[vertexId].position, 1);
+  VertexColoredOut out;
+  out.position = input.view_projection_matrix * pos;
+  out.normal = (input.camera_matrix * float4(vertices[vertexId].normal, 0)).xyz;
+  int color = vertices[vertexId].color;
+  out.color = float4(float(color&uint(255))/255.f, float((color>>8)&uint(255))/255.f, float((color>>16)&uint(255))/255.f, float((color>>24)&uint(255))/255.f);
+  return out;
+}
+
+
+fragment float4 vertex_colored_material_fragment_shader(const VertexColoredOut vertexIn [[stage_in]], constant VertexColoredMaterialUniforms& input [[buffer(1)]]) {
+  float l = clamp(dot(vertexIn.normal,input.light), 0.0, 1.0 - input.ambient) + input.ambient;
+  return vertexIn.color*l;
+}
 
 struct VertexIn {
   packed_float3 position;

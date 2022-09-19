@@ -616,7 +616,7 @@ void render_context_metal::get_data_from_texture(int32_t handle, void* data, int
 
 int32_t render_context_metal::add_geometry(int32_t vertex_declaration_type)
 {
-  if (vertex_declaration_type < 1 || vertex_declaration_type > 2)
+  if (vertex_declaration_type < 1 || vertex_declaration_type > 3)
     return -1;
   geometry_handle* gh = _geometry_handles;
   for (int32_t i = 0; i < MAX_GEOMETRY; ++i)
