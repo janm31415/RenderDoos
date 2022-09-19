@@ -104,6 +104,7 @@ void main()
   gl_Position = vproj*vec4(vPosition.xyz,1);
   Normal = (cam*vec4(vNormal,0)).xyz;
   Color = vec4(float(vColor&uint(255))/255.f, float((vColor>>8)&uint(255))/255.f, float((vColor>>16)&uint(255))/255.f, float((vColor>>24)&uint(255))/255.f);
+  //Color = vec4(float((vColor>>24)&uint(255))/255.f, float((vColor>>16)&uint(255))/255.f, float((vColor>>8)&uint(255))/255.f, float((vColor)&uint(255))/255.f);
   }
 )");
     }
@@ -123,7 +124,7 @@ void main()
   {
   float l = clamp(dot(Normal,LightDir), 0, 1.0 - Ambient) + Ambient;
   vec4 clr = Color*l;
-  FragColor = clr;
+  FragColor = Color;
   }
 )");
     }
