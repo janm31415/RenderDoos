@@ -151,9 +151,9 @@ namespace RenderDoos
     _context->remove_geometry(handle);
     }
 
-  int32_t render_engine::add_buffer_object(const void* data, int32_t size)
+  int32_t render_engine::add_buffer_object(const void* data, int32_t size, int32_t buffer_type)
     {
-    return _context->add_buffer_object(data, size);
+    return _context->add_buffer_object(data, size, buffer_type);
     }
 
   void render_engine::remove_buffer_object(int32_t handle)

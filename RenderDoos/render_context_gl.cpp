@@ -115,7 +115,7 @@ namespace RenderDoos
     }
 
   void render_context_gl::frame_end(bool /*wait_until_completed*/)
-    {    
+    {
     // release semaphore here?
     _semaphore.unlock();
     }
@@ -192,7 +192,7 @@ namespace RenderDoos
       return false;
 
     if (tex->format == texture_format_rgba8 || tex->format == texture_format_rgba8ui || tex->format == texture_format_bgra8)
-      {      
+      {
       glBindTexture(GL_TEXTURE_2D, tex->gl_texture_id);
       glPixelStorei(GL_PACK_ALIGNMENT, 1);
       glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // opengl by default aligns rows on 4 bytes I think    
@@ -211,10 +211,10 @@ namespace RenderDoos
       return false;
     texture* tex = &_textures[handle];
     if (tex->flags == 0)
-      return false;    
+      return false;
 
     if (tex->format == texture_format_rgba8 || tex->format == texture_format_rgba8ui)
-      {      
+      {
       uint8_t* bytes = new uint8_t[tex->w * tex->h * 4];
       uint32_t* d = (uint32_t*)bytes;
       const uint16_t* s = (const uint16_t*)data;
@@ -233,19 +233,19 @@ namespace RenderDoos
       glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // opengl by default aligns rows on 4 bytes I think    
       glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, tex->w, tex->h, GL_RGBA, GL_UNSIGNED_BYTE, bytes);
       delete[] bytes;
-      glCheckError();      
+      glCheckError();
       return true;
       }
     else if (tex->format == texture_format_rgba16)
       {
-      uint16_t* bytes = new uint16_t[tex->w * tex->h * 4];     
+      uint16_t* bytes = new uint16_t[tex->w * tex->h * 4];
       const uint16_t* s = (const uint16_t*)data;
       uint16_t* d = bytes;
       for (int y = 0; y < tex->h; ++y)
         {
         for (int x = 0; x < tex->w * 4; ++x, ++d, ++s)
           {
-          *d = (*s & 0x7fff)*2;
+          *d = (*s & 0x7fff) * 2;
           }
         }
       glBindTexture(GL_TEXTURE_2D, tex->gl_texture_id);
@@ -359,7 +359,7 @@ namespace RenderDoos
     }
 
   int32_t render_context_gl::add_texture(int32_t w, int32_t h, int32_t format, const uint16_t* data, int32_t usage_flags)
-    {    
+    {
     return _add_texture(w, h, format, (const void*)data, usage_flags, 2);
     }
 
@@ -396,14 +396,14 @@ namespace RenderDoos
 
     if (tex->format == texture_format_rgba8)
       {
-      if (size < tex->w*tex->h*4)
+      if (size < tex->w * tex->h * 4)
         return;
       glBindTexture(GL_TEXTURE_2D, tex->gl_texture_id);
       glPixelStorei(GL_PACK_ALIGNMENT, 1);
       glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // opengl by default aligns rows on 4 bytes I think
-      glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, (void*)data);      
+      glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, (void*)data);
       glCheckError();
-      }  
+      }
     else if (tex->format == texture_format_rgba16)
       {
       if (size < tex->w * tex->h * 8)
@@ -492,9 +492,9 @@ namespace RenderDoos
       }
 
     GLint access = GL_READ_WRITE;
-    if ((tex->usage_flags & TEX_USAGE_READ)==0)
+    if ((tex->usage_flags & TEX_USAGE_READ) == 0)
       access = GL_WRITE_ONLY;
-    if ((flags & TEX_USAGE_WRITE)==0)
+    if ((flags & TEX_USAGE_WRITE) == 0)
       access = GL_READ_ONLY;
     glBindImageTexture(channel, tex->gl_texture_id, 0, GL_FALSE, 0, access, formats[tex->format]);
 
@@ -526,7 +526,7 @@ namespace RenderDoos
     return -1;
     }
 
-  int32_t render_context_gl::add_buffer_object(const void* data, int32_t size)
+  int32_t render_context_gl::add_buffer_object(const void* data, int32_t size, int32_t buffer_type)
     {
     if (size <= 0)
       return -1;
@@ -534,13 +534,25 @@ namespace RenderDoos
     for (int32_t i = 0; i < MAX_BUFFER_OBJECT; ++i)
       {
       if (buf->size == 0)
-        {                        
+        {
         buf->size = size;
-        buf->type = COMPUTE_BUFFER;
         glGenBuffers(1, &buf->gl_buffer_id);
         glCheckError();
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, buf->gl_buffer_id);
-        glBufferData(GL_SHADER_STORAGE_BUFFER, size, data, GL_DYNAMIC_DRAW);
+        switch (buffer_type)
+          {
+          case ATOMIC_COUNTER_BUFFER:
+            buf->type = ATOMIC_COUNTER_BUFFER;
+            glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, buf->gl_buffer_id);
+            glBufferData(GL_ATOMIC_COUNTER_BUFFER, size, data, GL_DYNAMIC_DRAW);
+            break;
+          case COMPUTE_BUFFER:
+            buf->type = COMPUTE_BUFFER;
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, buf->gl_buffer_id);
+            glBufferData(GL_SHADER_STORAGE_BUFFER, size, data, GL_DYNAMIC_DRAW);
+            break;
+          default:
+            assert(0);
+          }
         glCheckError();
         return i;
         }
@@ -572,10 +584,21 @@ namespace RenderDoos
     buffer_object* buf = &_buffer_objects[handle];
     if (buf->size > 0)
       {
-      glBindBuffer(GL_SHADER_STORAGE_BUFFER, buf->gl_buffer_id);
-      if (size != buf->size)
-        glBufferData(GL_SHADER_STORAGE_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
-      glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, size, data);
+      switch (buf->type)
+        {
+        case ATOMIC_COUNTER_BUFFER:
+          glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, buf->gl_buffer_id);
+          if (size != buf->size)
+            glBufferData(GL_ATOMIC_COUNTER_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
+          glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, size, data);
+          break;
+        default:
+          glBindBuffer(GL_SHADER_STORAGE_BUFFER, buf->gl_buffer_id);
+          if (size != buf->size)
+            glBufferData(GL_SHADER_STORAGE_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
+          glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, size, data);
+          break;
+        }
       glCheckError();
       }
     }
@@ -598,10 +621,13 @@ namespace RenderDoos
         case COMPUTE_BUFFER:
           glBindBufferBase(GL_SHADER_STORAGE_BUFFER, channel, buf->gl_buffer_id);
           break;
+        case ATOMIC_COUNTER_BUFFER:
+          glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, channel, buf->gl_buffer_id);
+          break;
         default:
           break;
         }
-      
+
       glCheckError();
       }
     }
@@ -636,10 +662,10 @@ namespace RenderDoos
       /*
       switch (buf->type)
         {
-        case GEOMETRY_VERTEX:          
+        case GEOMETRY_VERTEX:
           glGetBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
           break;
-        case GEOMETRY_INDEX:       
+        case GEOMETRY_INDEX:
           glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, size, data);
           break;
         case COMPUTE_BUFFER:
@@ -1028,7 +1054,7 @@ namespace RenderDoos
     shader* sh = _shaders;
     for (int32_t i = 0; i < MAX_SHADER; ++i)
       {
-      if (sh->name && strcmp(sh->name, name)==0) // shader already exists
+      if (sh->name && strcmp(sh->name, name) == 0) // shader already exists
         {
         return i;
         }
@@ -1141,7 +1167,7 @@ namespace RenderDoos
       }
     if (sh->fragment_shader_handle >= 0)
       {
-      shader* fs = &_shaders[sh->fragment_shader_handle];    
+      shader* fs = &_shaders[sh->fragment_shader_handle];
       if (fs->compiled)
         glDetachShader(sh->gl_program_id, fs->gl_shader_id);
       }
@@ -1193,11 +1219,11 @@ namespace RenderDoos
 
 #ifdef DEBUG_HARD
     if (location == -1)
-      {            
+      {
       throw std::runtime_error("Uniform name does not correspond to an active uniform variable in program, or the name starts with the reserved prefix gl_, or the name is associated with an atomic counter or a named uniform block.");
       }
 #endif
-    
+
     if (location == -1)
       {
       return;
@@ -1302,7 +1328,7 @@ namespace RenderDoos
       }
 
     glCheckError();
-    }
+  }
 
   int32_t render_context_gl::add_query()
     {
@@ -1310,9 +1336,9 @@ namespace RenderDoos
     for (int32_t i = 0; i < MAX_QUERIES; ++i)
       {
       if (q->mode == 0)
-        {        
+        {
         glGenQueries(1, &q->gl_query_id);
-        q->mode = 1;       
+        q->mode = 1;
         return i;
         }
       ++q;
@@ -1352,7 +1378,7 @@ namespace RenderDoos
       return 0xffffffffffffffff;
     // wait until the results are available
     GLint stopTimerAvailable = 0;
-    while (!stopTimerAvailable) 
+    while (!stopTimerAvailable)
       {
       glGetQueryObjectiv(q->gl_query_id, GL_QUERY_RESULT_AVAILABLE, &stopTimerAvailable);
       }

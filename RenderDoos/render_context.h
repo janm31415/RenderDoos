@@ -35,6 +35,7 @@ namespace RenderDoos
 #define GEOMETRY_VERTEX 1
 #define GEOMETRY_INDEX 2
 #define COMPUTE_BUFFER 3
+#define ATOMIC_COUNTER_BUFFER 4
 
 #define VERTEX_STANDARD  1   // pos,normal,tex0
 #define VERTEX_COMPACT   2   // pos,color
@@ -263,7 +264,7 @@ namespace RenderDoos
       virtual int32_t add_render_buffer() = 0;
       virtual void remove_render_buffer(int32_t handle) = 0;
 
-      virtual int32_t add_buffer_object(const void* data, int32_t size) = 0;
+      virtual int32_t add_buffer_object(const void* data, int32_t size, int32_t buffer_type = COMPUTE_BUFFER) = 0;
       virtual void remove_buffer_object(int32_t handle) = 0;
       virtual void update_buffer_object(int32_t handle, const void* data, int32_t size) = 0;
       virtual void bind_buffer_object(int32_t handle, int32_t channel) = 0;

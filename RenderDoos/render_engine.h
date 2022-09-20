@@ -48,7 +48,7 @@ namespace RenderDoos
       int32_t add_geometry(int32_t vertex_declaration_type); // VERTEX_STANDARD or VERTEX_COMPACT or VERTEX_COLOR
       void remove_geometry(int32_t handle);
 
-      int32_t add_buffer_object(const void* data, int32_t size);
+      int32_t add_buffer_object(const void* data, int32_t size, int32_t buffer_type = COMPUTE_BUFFER);
       void remove_buffer_object(int32_t handle);
       void update_buffer_object(int32_t handle, const void* data, int32_t size);
       void bind_buffer_object(int32_t handle, int32_t channel);
