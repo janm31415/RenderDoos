@@ -1296,12 +1296,14 @@ namespace RenderDoos
       }
       case uniform_type::mat3:
       {
-      assert(0); // todo
+      float* values = (float*)uni->raw;
+      glUniformMatrix3fv(location, uni->num, false, values);
       break;
       }
       case uniform_type::mat4:
       {
-      assert(0); // todo
+      float* values = (float*)uni->raw;
+      glUniformMatrix4fv(location, uni->num, false, values);
       break;
       }
       case uniform_type::integer:
@@ -1328,7 +1330,7 @@ namespace RenderDoos
       }
 
     glCheckError();
-  }
+    }
 
   int32_t render_context_gl::add_query()
     {

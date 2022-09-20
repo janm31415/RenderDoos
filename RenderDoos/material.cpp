@@ -14,14 +14,13 @@ layout (location = 1) in uint vColor;
 
 out vec4 Color;
 
-uniform vec4 ViewProject[4]; // columns
-uniform vec4 Camera[4]; // columns
+uniform mat4 ViewProject; // columns
+uniform mat4 Camera; // columns
 
 void main() 
   {
   Color = vec4(float(vColor&uint(255))/255.f, float((vColor>>8)&uint(255))/255.f, float((vColor>>16)&uint(255))/255.f, float((vColor>>24)&uint(255))/255.f);
-  mat4 vproj = mat4(ViewProject[0], ViewProject[1], ViewProject[2], ViewProject[3]);    
-  gl_Position = vproj*vec4(vPosition.xyz,1); 
+  gl_Position = ViewProject*vec4(vPosition.xyz,1); 
   }
 )");
     }
@@ -72,7 +71,7 @@ void main()
       fs_handle = engine->add_shader(get_compact_material_fragment_shader().c_str(), SHADER_FRAGMENT, nullptr);
       }
     shader_program_handle = engine->add_program(vs_handle, fs_handle);
-    vp_handle = engine->add_uniform("ViewProject", uniform_type::vec4, 4);
+    vp_handle = engine->add_uniform("ViewProject", uniform_type::mat4, 1);
     }
 
   void compact_material::bind(render_engine* engine)
@@ -91,18 +90,16 @@ void main()
 layout (location = 0) in vec3 vPosition;
 layout (location = 1) in vec3 vNormal;
 layout (location = 2) in uint vColor;
-uniform vec4 ViewProject[4]; // columns
-uniform vec4 Camera[4]; // columns
+uniform mat4 ViewProject; // columns
+uniform mat4 Camera; // columns
 
 out vec3 Normal;
 out vec4 Color;
 
 void main() 
   {
-  mat4 vproj = mat4(ViewProject[0], ViewProject[1], ViewProject[2], ViewProject[3]);  
-  mat4 cam = mat4(Camera[0], Camera[1], Camera[2], Camera[3]);  
-  gl_Position = vproj*vec4(vPosition.xyz,1);
-  Normal = (cam*vec4(vNormal,0)).xyz;  
+  gl_Position = ViewProject*vec4(vPosition.xyz,1);
+  Normal = (Camera*vec4(vNormal,0)).xyz;  
   Color = vec4(float(vColor&uint(255))/255.f, float((vColor>>8)&uint(255))/255.f, float((vColor>>16)&uint(255))/255.f, float((vColor>>24)&uint(255))/255.f);  
   }
 )");
@@ -173,8 +170,8 @@ void main()
       fs_handle = engine->add_shader(get_vertex_colored_material_fragment_shader().c_str(), SHADER_FRAGMENT, nullptr);
       }   
     shader_program_handle = engine->add_program(vs_handle, fs_handle);
-    vp_handle = engine->add_uniform("ViewProject", uniform_type::vec4, 4);
-    cam_handle = engine->add_uniform("Camera", uniform_type::vec4, 4);
+    vp_handle = engine->add_uniform("ViewProject", uniform_type::mat4, 1);
+    cam_handle = engine->add_uniform("Camera", uniform_type::mat4, 1);
     light_dir_handle = engine->add_uniform("LightDir", uniform_type::vec3, 1);
     ambient_handle = engine->add_uniform("Ambient", uniform_type::real, 1);
     }
@@ -204,18 +201,16 @@ void main()
 layout (location = 0) in vec3 vPosition;
 layout (location = 1) in vec3 vNormal;
 layout (location = 2) in vec2 vTexCoord;
-uniform vec4 ViewProject[4]; // columns
-uniform vec4 Camera[4]; // columns
+uniform mat4 ViewProject; // columns
+uniform mat4 Camera; // columns
 
 out vec3 Normal;
 out vec2 TexCoord;
 
 void main() 
   {
-  mat4 vproj = mat4(ViewProject[0], ViewProject[1], ViewProject[2], ViewProject[3]);  
-  mat4 cam = mat4(Camera[0], Camera[1], Camera[2], Camera[3]);  
-  gl_Position = vproj*vec4(vPosition.xyz,1);
-  Normal = (cam*vec4(vNormal,0)).xyz;
+  gl_Position = ViewProject*vec4(vPosition.xyz,1);
+  Normal = (Camera*vec4(vNormal,0)).xyz;
   TexCoord = vTexCoord;
   }
 )");
@@ -315,8 +310,8 @@ void main()
       }
     dummy_tex_handle = engine->add_texture(1, 1, texture_format_rgba8, (const uint16_t*)nullptr);
     shader_program_handle = engine->add_program(vs_handle, fs_handle);
-    vp_handle = engine->add_uniform("ViewProject", uniform_type::vec4, 4);
-    cam_handle = engine->add_uniform("Camera", uniform_type::vec4, 4);
+    vp_handle = engine->add_uniform("ViewProject", uniform_type::mat4, 1);
+    cam_handle = engine->add_uniform("Camera", uniform_type::mat4, 1);
     light_dir_handle = engine->add_uniform("LightDir", uniform_type::vec3, 1);
     tex_sample_handle = engine->add_uniform("TextureSample", uniform_type::integer, 1);
     ambient_handle = engine->add_uniform("Ambient", uniform_type::real, 1);
@@ -367,12 +362,11 @@ void main()
     {
     return std::string(R"(#version 330 core
 layout (location = 0) in vec3 vPosition;
-uniform vec4 ViewProject[4]; // columns
+uniform mat4 ViewProject; // columns
 
 void main() 
-  {  
-  mat4 vproj = mat4(ViewProject[0], ViewProject[1], ViewProject[2], ViewProject[3]);    
-  gl_Position = vproj*vec4(vPosition.xyz,1); 
+  {   
+  gl_Position = ViewProject*vec4(vPosition.xyz,1); 
   }
 )");
     }
@@ -493,7 +487,7 @@ fragment float4 shadertoy_material_fragment_shader(const VertexOut vertexIn [[st
       fs_handle = engine->add_shader(fragment_shader.c_str(), SHADER_FRAGMENT, nullptr);
       }
     shader_program_handle = engine->add_program(vs_handle, fs_handle);
-    vp_handle = engine->add_uniform("ViewProject", uniform_type::vec4, 4);
+    vp_handle = engine->add_uniform("ViewProject", uniform_type::mat4, 1);
     res_handle = engine->add_uniform("iResolution", uniform_type::vec3, 1);
     time_handle = engine->add_uniform("iTime", uniform_type::real, 1);
     time_delta_handle = engine->add_uniform("iTimeDelta", uniform_type::real, 1);
