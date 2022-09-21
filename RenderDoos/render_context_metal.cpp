@@ -737,7 +737,7 @@ int32_t render_context_metal::add_buffer_object(const void* data, int32_t size, 
     if (buf->size == 0)
     {
       buf->size = size;
-      buf->type = buffer_type;
+      buf->type = COMPUTE_BUFFER;
       MTL::ResourceOptions options = MTL::ResourceStorageModeShared;
       MTL::Buffer* p_buffer;
       if (data == nullptr)
