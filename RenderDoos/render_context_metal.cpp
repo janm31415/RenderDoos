@@ -727,7 +727,7 @@ const frame_buffer* render_context_metal::get_frame_buffer(int32_t handle) const
   return &_frame_buffers[handle];
 }
 
-int32_t render_context_metal::add_buffer_object(const void* data, int32_t size)
+int32_t render_context_metal::add_buffer_object(const void* data, int32_t size, int32_t buffer_type)
 {
   if (size <= 0)
     return -1;
@@ -737,7 +737,7 @@ int32_t render_context_metal::add_buffer_object(const void* data, int32_t size)
     if (buf->size == 0)
     {
       buf->size = size;
-      buf->type = COMPUTE_BUFFER;
+      buf->type = buffer_type;
       MTL::ResourceOptions options = MTL::ResourceStorageModeShared;
       MTL::Buffer* p_buffer;
       if (data == nullptr)
