@@ -114,8 +114,10 @@ namespace RenderDoos
     _semaphore.lock();
     }
 
-  void render_context_gl::frame_end(bool /*wait_until_completed*/)
+  void render_context_gl::frame_end(bool wait_until_completed)
     {
+    if (wait_until_completed)
+      glMemoryBarrier(GL_ALL_BARRIER_BITS);
     // release semaphore here?
     _semaphore.unlock();
     }
