@@ -15,7 +15,7 @@ struct CompactMaterialUniforms {
   float4x4 view_projection_matrix;
 };
 
-vertex VertexCompactOut compact_material_vertex_shader(const device VertexCompactIn *vertices [[buffer(0)]], uint vertexId [[vertex_id]], constant CompactMaterialUniforms& input [[buffer(1)]]) {
+vertex VertexCompactOut compact_material_vertex_shader(const device VertexCompactIn *vertices [[buffer(0)]], uint vertexId [[vertex_id]], constant CompactMaterialUniforms& input [[buffer(10)]]) {
   float4 pos(vertices[vertexId].position, 1);
   VertexCompactOut out;
   out.position = input.view_projection_matrix * pos;
@@ -48,7 +48,7 @@ struct VertexColoredOut {
   float4 color;
 };
 
-vertex VertexColoredOut vertex_colored_material_vertex_shader(const device VertexColoredIn *vertices [[buffer(0)]], uint vertexId [[vertex_id]], constant VertexColoredMaterialUniforms& input [[buffer(1)]]) {
+vertex VertexColoredOut vertex_colored_material_vertex_shader(const device VertexColoredIn *vertices [[buffer(0)]], uint vertexId [[vertex_id]], constant VertexColoredMaterialUniforms& input [[buffer(10)]]) {
   float4 pos(vertices[vertexId].position, 1);
   VertexColoredOut out;
   out.position = input.view_projection_matrix * pos;
@@ -59,7 +59,7 @@ vertex VertexColoredOut vertex_colored_material_vertex_shader(const device Verte
 }
 
 
-fragment float4 vertex_colored_material_fragment_shader(const VertexColoredOut vertexIn [[stage_in]], constant VertexColoredMaterialUniforms& input [[buffer(1)]]) {
+fragment float4 vertex_colored_material_fragment_shader(const VertexColoredOut vertexIn [[stage_in]], constant VertexColoredMaterialUniforms& input [[buffer(10)]]) {
   float l = clamp(dot(vertexIn.normal,input.light), 0.0, 1.0 - input.ambient) + input.ambient;
   return vertexIn.color*l;
 }
@@ -86,7 +86,7 @@ struct VertexOut {
   float2 texcoord;
 };
 
-vertex VertexOut simple_material_vertex_shader(const device VertexIn *vertices [[buffer(0)]], uint vertexId [[vertex_id]], constant SimpleMaterialUniforms& input [[buffer(1)]]) {
+vertex VertexOut simple_material_vertex_shader(const device VertexIn *vertices [[buffer(0)]], uint vertexId [[vertex_id]], constant SimpleMaterialUniforms& input [[buffer(10)]]) {
   float4 pos(vertices[vertexId].position, 1);
   VertexOut out;
   out.position = input.view_projection_matrix * pos;
@@ -96,7 +96,7 @@ vertex VertexOut simple_material_vertex_shader(const device VertexIn *vertices [
 }
 
 
-fragment float4 simple_material_fragment_shader(const VertexOut vertexIn [[stage_in]], texture2d<float> texture [[texture(0)]], sampler sampler2d [[sampler(0)]], constant SimpleMaterialUniforms& input [[buffer(1)]]) {
+fragment float4 simple_material_fragment_shader(const VertexOut vertexIn [[stage_in]], texture2d<float> texture [[texture(0)]], sampler sampler2d [[sampler(0)]], constant SimpleMaterialUniforms& input [[buffer(10)]]) {
   float l = clamp(dot(vertexIn.normal,input.light), 0.0, 1.0 - input.ambient) + input.ambient;
   return (texture.sample(sampler2d, vertexIn.texcoord)*input.texture_sample + input.color*(1-input.texture_sample))*l;
 }
@@ -109,7 +109,7 @@ struct ShadertoyMaterialUniforms {
   int iFrame;
 };
 
-vertex VertexOut shadertoy_material_vertex_shader(const device VertexIn *vertices [[buffer(0)]], uint vertexId [[vertex_id]], constant ShadertoyMaterialUniforms& input [[buffer(1)]]) {
+vertex VertexOut shadertoy_material_vertex_shader(const device VertexIn *vertices [[buffer(0)]], uint vertexId [[vertex_id]], constant ShadertoyMaterialUniforms& input [[buffer(10)]]) {
   float4 pos(vertices[vertexId].position, 1);
   VertexOut out;
   out.position = input.view_projection_matrix * pos;

@@ -967,8 +967,8 @@ void render_context_metal::geometry_draw(int32_t handle)
   while (_raw_uniforms.size() % 16)
     _raw_uniforms.push_back(0);
   
-  mp_render_command_encoder->setVertexBytes(_raw_uniforms.data(), _raw_uniforms.size(), 1);
-  mp_render_command_encoder->setFragmentBytes(_raw_uniforms.data(), _raw_uniforms.size(), 1);
+  mp_render_command_encoder->setVertexBytes(_raw_uniforms.data(), _raw_uniforms.size(), 10);
+  mp_render_command_encoder->setFragmentBytes(_raw_uniforms.data(), _raw_uniforms.size(), 10);
   
   if (gh->vertex.buffer >= 0 && gh->vertex.buffer < MAX_BUFFER_OBJECT)
   {

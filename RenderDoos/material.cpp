@@ -472,7 +472,7 @@ struct ShadertoyMaterialUniforms {
 };)");
 
 std::string footer = std::string(R"(
-fragment float4 shadertoy_material_fragment_shader(const VertexOut vertexIn [[stage_in]], constant ShadertoyMaterialUniforms& input [[buffer(1)]]) {
+fragment float4 shadertoy_material_fragment_shader(const VertexOut vertexIn [[stage_in]], constant ShadertoyMaterialUniforms& input [[buffer(10)]]) {
   float4 fragColor;
   mainImage(fragColor, vertexIn.position.xy, input.iTime, input.iResolution);
   return float4(fragColor[0], fragColor[1], fragColor[2], 1);
