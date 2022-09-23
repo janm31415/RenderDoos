@@ -798,6 +798,9 @@ void render_context_metal::bind_buffer_object(int32_t handle, int32_t channel)
         case GEOMETRY_INDEX:
           mp_render_command_encoder->setFragmentBuffer(p_buf, 0, channel);
           break;
+        case COMPUTE_BUFFER:
+          mp_render_command_encoder->setFragmentBuffer(p_buf, 0, channel);
+          break;
         default:
           break;
       }
