@@ -1,6 +1,7 @@
 set(RENDERDOOS_TARGET "x64" CACHE STRING  "Choose your target platform: x64 compatible pc or arm.")
 set_property(CACHE RENDERDOOS_TARGET PROPERTY STRINGS x64 arm)
 
+option(RENDERDOOS_SIMD "Turn off if you don't want to use SIMD instructions" ON)
 
 set(HDRS
 float.h
@@ -66,6 +67,10 @@ target_compile_definitions(RenderDoos PUBLIC RENDERDOOS_ARM)
 else (${RENDERDOOS_TARGET} STREQUAL "arm")
 target_compile_definitions(RenderDoos PUBLIC RENDERDOOS_X64L)
 endif (${RENDERDOOS_TARGET} STREQUAL "arm")
+
+if (RENDERDOOS_SIMD)
+target_compile_definitions(RenderDoos PUBLIC RENDERDOOS_SIMD)
+endif (RENDERDOOS_SIMD)
 
 
 if (APPLE)

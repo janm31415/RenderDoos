@@ -2,16 +2,43 @@
 
 #include <cmath>
 
+#ifndef RENDERDOOS_SIMD
+#include <utility>
+#endif
+
 namespace RenderDoos
   {
+#ifdef RENDERDOOS_SIMD
   static const __m128 three_128 = _mm_set1_ps(3.0f);
   static const __m128 half_128 = _mm_set1_ps(0.5f);
+#endif
 
   float4::float4() {}
+#ifdef RENDERDOOS_SIMD
   float4::float4(const __m128 in) : m128(in) {}
   float4::float4(float f) : m128(_mm_set1_ps(f)) {}
   float4::float4(float _x, float _y, float _z) : m128(_mm_set_ps(1.f, _z, _y, _x)) {}
   float4::float4(float _x, float _y, float _z, float _w) : m128(_mm_set_ps(_w, _z, _y, _x)) {}
+#else
+  float4::float4(float fl)
+    {
+    f[0] = f[1] = f[2] = f[3] = fl;
+    }
+  float4::float4(float _x, float _y, float _z)
+    {
+    f[0] = _x;
+    f[1] = _y;
+    f[2] = _z;
+    f[3] = 1.f;
+    }
+  float4::float4(float _x, float _y, float _z, float _w)
+    {
+    f[0] = _x;
+    f[1] = _y;
+    f[2] = _z;
+    f[3] = _w;
+    }
+#endif
 
   float4x4::float4x4() {}
   float4x4::float4x4(const float4& col0, const float4& col1, const float4& col2, const float4& col3) : col{ col0, col1, col2, col3 } {}
@@ -20,7 +47,7 @@ namespace RenderDoos
     for (int i = 0; i < 16; ++i)
       f[i] = m[i];
     }
-
+#ifdef RENDERDOOS_SIMD
   float4 operator + (const float4& a)
     {
     return a;
@@ -148,20 +175,6 @@ namespace RenderDoos
     return _mm_or_ps(_mm_and_ps(mask, res), _mm_andnot_ps(mask, res_newton_raphson));
     }
 
-  float4 normalize(const float4& v)
-    {
-    double d = dot(v,v);    
-    if (d < 1e-20f)
-      {
-      return float4(1,0,0,v[3]);
-      }
-    else
-      {
-      d = 1.0 / std::sqrt(d);
-      return float4((float)(v[0]*d), (float)(v[1]*d), (float)(v[2]*d), v[3]);
-      }
-    }
-
   float4 unpacklo(const float4& left, const float4& right)
     {
     return _mm_unpacklo_ps(left.m128, right.m128);
@@ -194,6 +207,476 @@ namespace RenderDoos
     {
     float4x4 m(_mm_set_ps(0.f, 0.f, 0.f, 1.f), _mm_set_ps(0.f, 0.f, 1.f, 0.f), _mm_set_ps(0.f, 1.f, 0.f, 0.f), _mm_set_ps(1.f, z, y, x));
     return m;
+    }
+
+
+
+  // for column major matrix
+  // we use __m128 to represent 2x2 matrix as A = | A0  A1 |
+  //                                              | A2  A3 |
+  // 2x2 column major matrix multiply A*B
+  __m128 mat2mul(__m128 vec1, __m128 vec2)
+    {
+    const auto vec3 = _mm_mul_ps(vec1, _mm_shuffle_ps(vec2, vec2, _MM_SHUFFLE(3, 3, 0, 0)));
+    const auto vec4 = _mm_mul_ps(_mm_shuffle_ps(vec1, vec1, _MM_SHUFFLE(1, 0, 3, 2)), _mm_shuffle_ps(vec2, vec2, _MM_SHUFFLE(2, 2, 1, 1)));
+    return _mm_add_ps(vec3, vec4);
+    }
+
+  // 2x2 column major matrix adjugate multiply (A#)*B
+  __m128 mat2adjmul(__m128 vec1, __m128 vec2)
+    {
+    const auto vec3 = _mm_mul_ps(_mm_shuffle_ps(vec1, vec1, _MM_SHUFFLE(0, 3, 0, 3)), vec2);
+    const auto vec4 = _mm_mul_ps(_mm_shuffle_ps(vec1, vec1, _MM_SHUFFLE(1, 2, 1, 2)), _mm_shuffle_ps(vec2, vec2, _MM_SHUFFLE(2, 3, 0, 1)));
+    return _mm_sub_ps(vec3, vec4);
+    }
+
+  // 2x2 column major matrix multiply adjugate A*(B#)
+  __m128 mat2muladj(__m128 vec1, __m128 vec2)
+    {
+    const auto vec3 = _mm_mul_ps(vec1, _mm_shuffle_ps(vec2, vec2, _MM_SHUFFLE(0, 0, 3, 3)));
+    const auto vec4 = _mm_mul_ps(_mm_shuffle_ps(vec1, vec1, _MM_SHUFFLE(1, 0, 3, 2)), _mm_shuffle_ps(vec2, vec2, _MM_SHUFFLE(2, 2, 1, 1)));
+    return _mm_sub_ps(vec3, vec4);
+    }
+
+  float4x4 invert(const float4x4& m)
+    {
+    float4x4 out;
+    // sub matrices
+    __m128 A = _mm_shuffle_ps(m.col[0].m128, m.col[1].m128, _MM_SHUFFLE(1, 0, 1, 0));
+    __m128 C = _mm_shuffle_ps(m.col[0].m128, m.col[1].m128, _MM_SHUFFLE(3, 2, 3, 2));
+    __m128 B = _mm_shuffle_ps(m.col[2].m128, m.col[3].m128, _MM_SHUFFLE(1, 0, 1, 0));
+    __m128 D = _mm_shuffle_ps(m.col[2].m128, m.col[3].m128, _MM_SHUFFLE(3, 2, 3, 2));
+
+    // determinant as (|A| |B| |C| |D|)
+    __m128 detSub = _mm_sub_ps(_mm_mul_ps(
+      _mm_shuffle_ps(m.col[0].m128, m.col[2].m128, _MM_SHUFFLE(2, 0, 2, 0)),
+      _mm_shuffle_ps(m.col[1].m128, m.col[3].m128, _MM_SHUFFLE(3, 1, 3, 1))),
+      _mm_mul_ps(_mm_shuffle_ps(m.col[0].m128, m.col[2].m128, _MM_SHUFFLE(3, 1, 3, 1)),
+        _mm_shuffle_ps(m.col[1].m128, m.col[3].m128, _MM_SHUFFLE(2, 0, 2, 0))));
+    __m128 detA = _mm_shuffle_ps(detSub, detSub, _MM_SHUFFLE(0, 0, 0, 0));
+    __m128 detC = _mm_shuffle_ps(detSub, detSub, _MM_SHUFFLE(1, 1, 1, 1));
+    __m128 detB = _mm_shuffle_ps(detSub, detSub, _MM_SHUFFLE(2, 2, 2, 2));
+    __m128 detD = _mm_shuffle_ps(detSub, detSub, _MM_SHUFFLE(3, 3, 3, 3));
+
+    // let iM = 1/|M| * | X  Y |
+    //                  | Z  W |
+
+    // D#C
+    __m128 D_C = mat2adjmul(D, C);
+    // A#B
+    __m128 A_B = mat2adjmul(A, B);
+    // X# = |D|A - B(D#C)
+    __m128 X_ = _mm_sub_ps(_mm_mul_ps(detD, A), mat2mul(B, D_C));
+    // W# = |A|D - C(A#B)
+    __m128 W_ = _mm_sub_ps(_mm_mul_ps(detA, D), mat2mul(C, A_B));
+
+    // |M| = |A|*|D| + ... (continue later)
+    __m128 detM = _mm_mul_ps(detA, detD);
+
+    // Y# = |B|C - D(A#B)#
+    __m128 Y_ = _mm_sub_ps(_mm_mul_ps(detB, C), mat2muladj(D, A_B));
+    // Z# = |C|B - A(D#C)#
+    __m128 Z_ = _mm_sub_ps(_mm_mul_ps(detC, B), mat2muladj(A, D_C));
+
+    // |M| = |A|*|D| + |B|*|C| ... (continue later)
+    detM = _mm_add_ps(detM, _mm_mul_ps(detB, detC));
+
+    // tr((A#B)(D#C))
+    __m128 tr = _mm_mul_ps(A_B, _mm_shuffle_ps(D_C, D_C, _MM_SHUFFLE(3, 1, 2, 0)));
+    tr = _mm_hadd_ps(tr, tr);
+    tr = _mm_hadd_ps(tr, tr);
+    // |M| = |A|*|D| + |B|*|C| - tr((A#B)(D#C)
+    detM = _mm_sub_ps(detM, tr);
+
+    const __m128 adjSignMask = _mm_setr_ps(1.f, -1.f, -1.f, 1.f);
+    // (1/|M|, -1/|M|, -1/|M|, 1/|M|)
+    __m128 rDetM = _mm_div_ps(adjSignMask, detM);
+
+    X_ = _mm_mul_ps(X_, rDetM);
+    Y_ = _mm_mul_ps(Y_, rDetM);
+    Z_ = _mm_mul_ps(Z_, rDetM);
+    W_ = _mm_mul_ps(W_, rDetM);
+
+    // apply adjugate and store, here we combine adjugate shuffle and store shuffle
+    out.col[0] = float4(_mm_shuffle_ps(X_, Z_, _MM_SHUFFLE(1, 3, 1, 3)));
+    out.col[1] = float4(_mm_shuffle_ps(X_, Z_, _MM_SHUFFLE(0, 2, 0, 2)));
+    out.col[2] = float4(_mm_shuffle_ps(Y_, W_, _MM_SHUFFLE(1, 3, 1, 3)));
+    out.col[3] = float4(_mm_shuffle_ps(Y_, W_, _MM_SHUFFLE(0, 2, 0, 2)));
+
+    return out;
+    }
+
+  float4x4 matrix_matrix_multiply(const float4x4& left, const float4x4& right)
+    {
+    float4x4 out;
+    float4 r[4];
+    transpose(r[0], r[1], r[2], r[3], left.col[0], left.col[1], left.col[2], left.col[3]);
+    out[0] = _mm_cvtss_f32(_mm_dp_ps(r[0].m128, right.col[0].m128, 255));
+    out[1] = _mm_cvtss_f32(_mm_dp_ps(r[1].m128, right.col[0].m128, 255));
+    out[2] = _mm_cvtss_f32(_mm_dp_ps(r[2].m128, right.col[0].m128, 255));
+    out[3] = _mm_cvtss_f32(_mm_dp_ps(r[3].m128, right.col[0].m128, 255));
+    out[4] = _mm_cvtss_f32(_mm_dp_ps(r[0].m128, right.col[1].m128, 255));
+    out[5] = _mm_cvtss_f32(_mm_dp_ps(r[1].m128, right.col[1].m128, 255));
+    out[6] = _mm_cvtss_f32(_mm_dp_ps(r[2].m128, right.col[1].m128, 255));
+    out[7] = _mm_cvtss_f32(_mm_dp_ps(r[3].m128, right.col[1].m128, 255));
+    out[8] = _mm_cvtss_f32(_mm_dp_ps(r[0].m128, right.col[2].m128, 255));
+    out[9] = _mm_cvtss_f32(_mm_dp_ps(r[1].m128, right.col[2].m128, 255));
+    out[10] = _mm_cvtss_f32(_mm_dp_ps(r[2].m128, right.col[2].m128, 255));
+    out[11] = _mm_cvtss_f32(_mm_dp_ps(r[3].m128, right.col[2].m128, 255));
+    out[12] = _mm_cvtss_f32(_mm_dp_ps(r[0].m128, right.col[3].m128, 255));
+    out[13] = _mm_cvtss_f32(_mm_dp_ps(r[1].m128, right.col[3].m128, 255));
+    out[14] = _mm_cvtss_f32(_mm_dp_ps(r[2].m128, right.col[3].m128, 255));
+    out[15] = _mm_cvtss_f32(_mm_dp_ps(r[3].m128, right.col[3].m128, 255));
+    return out;
+    }
+
+  float4x4 frustum(float left, float right, float bottom, float top, float near_plane, float far_plane)
+    {
+    float4x4 out(_mm_set_ps(0.f, 0.f, 0.f, 2.f * near_plane / (right - left)), _mm_set_ps(0.f, 0.f, -2.f * near_plane / (top - bottom), 0.f),
+      _mm_set_ps(-1.f, -(far_plane + near_plane) / (far_plane - near_plane), -(top + bottom) / (top - bottom), (right + left) / (right - left)),
+      _mm_set_ps(0.f, -(2.f * far_plane * near_plane) / (far_plane - near_plane), 0.f, 0.f));
+    return out;
+    }
+
+  float4x4 orthographic(float left, float right, float bottom, float top, float near_plane, float far_plane)
+    {
+    float4x4 out(_mm_set_ps(-(right + left) / (right - left), 0.f, 0.f, 2.f / (right - left)),
+      _mm_set_ps(-(top + bottom) / (top - bottom), 0.f, 2.f / (top - bottom), 0.f),
+      _mm_set_ps(-(far_plane + near_plane) / (far_plane - near_plane), -2.f / (far_plane - near_plane), 0.f, 0.f),
+      _mm_set_ps(1.f, 0.f, 0.f, 0.f));
+    return out;
+    }
+
+
+#else
+  float4 operator + (const float4& a)
+    {
+    return a;
+    }
+
+  float4 operator - (const float4& a)
+    {
+    return float4(-a.f[0], -a.f[1], -a.f[2], -a.f[3]);
+    }
+
+  float4 operator + (const float4& left, const float4& right)
+    {
+    return float4(left.f[0] + right.f[0], left.f[1] + right.f[1], left.f[2] + right.f[2], left.f[3] + right.f[3]);
+    }
+
+  float4 operator - (const float4& left, const float4& right)
+    {
+    return float4(left.f[0] - right.f[0], left.f[1] - right.f[1], left.f[2] - right.f[2], left.f[3] - right.f[3]);
+    }
+
+  float4 operator * (const float4& left, const float4& right)
+    {
+    return float4(left.f[0] * right.f[0], left.f[1] * right.f[1], left.f[2] * right.f[2], left.f[3] * right.f[3]);
+    }
+
+  float4 operator * (const float4& left, float right)
+    {
+    return left * float4(right);
+    }
+
+  float4 operator * (float left, const float4& right)
+    {
+    return float4(left) * right;
+    }
+
+  float4 operator / (const float4& left, const float4& right)
+    {
+    return float4(left.f[0] / right.f[0], left.f[1] / right.f[1], left.f[2] / right.f[2], left.f[3] / right.f[3]);
+    }
+
+  float4 operator / (const float4& left, float right)
+    {
+    return left / float4(right);
+    }
+
+  float4 operator / (float left, const float4& right)
+    {
+    return float4(left) / right;
+    }
+
+  float4 min(const float4& left, const float4& right)
+    {
+    return float4(std::min(left.f[0], right.f[0]), std::min(left.f[1], right.f[1]), std::min(left.f[2], right.f[2]), std::min(left.f[3], right.f[3]));
+    }
+
+  float4 max(const float4& left, const float4& right)
+    {
+    return float4(std::max(left.f[0], right.f[0]), std::max(left.f[1], right.f[1]), std::max(left.f[2], right.f[2]), std::max(left.f[3], right.f[3]));
+    }
+
+  float min_horizontal(const float4& x)
+    {
+    return std::min(std::min(std::min(x.f[0], x.f[1]), x.f[2]), x.f[3]);
+    }
+
+  float max_horizontal(const float4& x)
+    {
+    return std::max(std::max(std::max(x.f[0], x.f[1]), x.f[2]), x.f[3]);
+    }
+
+  float4 cross(const float4& left, const float4& right)
+    {
+    return float4(left.f[1] * right.f[2] - left.f[2] * right.f[1], left.f[2] * right.f[0] - left.f[0] * right.f[2], left.f[0] * right.f[1] - left.f[1] * right.f[0], 0.f);
+    }
+
+  float dot(const float4& left, const float4& right)
+    {
+    return left.f[0] * right.f[0] + left.f[1] * right.f[1] + left.f[2] * right.f[2];
+    }
+
+  float dot4(const float4& left, const float4& right)
+    {
+    return left.f[0] * right.f[0] + left.f[1] * right.f[1] + left.f[2] * right.f[2] + left.f[3] * right.f[3];
+    }
+
+  float4 abs(const float4& a)
+    {
+    return float4(fabs(a.f[0]), fabs(a.f[1]), fabs(a.f[2]), fabs(a.f[3]));
+    }
+
+  float4 sqrt(const float4& a)
+    {
+    return float4(std::sqrt(a.f[0]), std::sqrt(a.f[1]), std::sqrt(a.f[2]), std::sqrt(a.f[3]));
+    }
+
+  float4 rsqrt(const float4& a)
+    {
+    return float4(1.f / std::sqrt(a.f[0]), 1.f / std::sqrt(a.f[1]), 1.f / std::sqrt(a.f[2]), 1.f / std::sqrt(a.f[3]));
+    }
+
+  float4 reciprocal(const float4& a)
+    {
+    return float4(1.f / a.f[0], 1.f / a.f[1], 1.f / a.f[2], 1.f / a.f[3]);
+    }
+
+  float4 unpacklo(const float4& left, const float4& right)
+    {
+    return float4(left.f[0], right.f[0], left.f[1], right.f[1]);
+    }
+
+  float4 unpackhi(const float4& left, const float4& right)
+    {
+    return float4(left.f[2], right.f[2], left.f[3], right.f[3]);
+    }
+
+  void transpose(float4& r0, float4& r1, float4& r2, float4& r3, const float4& c0, const float4& c1, const float4& c2, const float4& c3)
+    {
+    float4 l02(unpacklo(c0, c2));
+    float4 h02(unpackhi(c0, c2));
+    float4 l13(unpacklo(c1, c3));
+    float4 h13(unpackhi(c1, c3));
+    r0 = unpacklo(l02, l13);
+    r1 = unpackhi(l02, l13);
+    r2 = unpacklo(h02, h13);
+    r3 = unpackhi(h02, h13);
+    }
+
+  float4x4 get_identity()
+    {
+    float4x4 m(float4(1.f, 0.f, 0.f, 0.f), float4(0.f, 1.f, 0.f, 0.f), float4(0.f, 0.f, 1.f, 0.f), float4(0.f, 0.f, 0.f, 1.f));
+    return m;
+    }
+
+  float4x4 make_translation(float x, float y, float z)
+    {
+    float4x4 m(float4(1.f, 0.f, 0.f, 0.f), float4(0.f, 1.f, 0.f, 0.f), float4(0.f, 0.f, 1.f, 0.f), float4(x, y, z, 1.f));
+    return m;
+    }
+
+  float4x4 invert(const float4x4& m)
+    {
+    float4x4 out;
+    float det;
+    int i;
+
+    out[0] = m[5] * m[10] * m[15] -
+      m[5] * m[11] * m[14] -
+      m[9] * m[6] * m[15] +
+      m[9] * m[7] * m[14] +
+      m[13] * m[6] * m[11] -
+      m[13] * m[7] * m[10];
+
+    out[4] = -m[4] * m[10] * m[15] +
+      m[4] * m[11] * m[14] +
+      m[8] * m[6] * m[15] -
+      m[8] * m[7] * m[14] -
+      m[12] * m[6] * m[11] +
+      m[12] * m[7] * m[10];
+
+    out[8] = m[4] * m[9] * m[15] -
+      m[4] * m[11] * m[13] -
+      m[8] * m[5] * m[15] +
+      m[8] * m[7] * m[13] +
+      m[12] * m[5] * m[11] -
+      m[12] * m[7] * m[9];
+
+    out[12] = -m[4] * m[9] * m[14] +
+      m[4] * m[10] * m[13] +
+      m[8] * m[5] * m[14] -
+      m[8] * m[6] * m[13] -
+      m[12] * m[5] * m[10] +
+      m[12] * m[6] * m[9];
+
+    out[1] = -m[1] * m[10] * m[15] +
+      m[1] * m[11] * m[14] +
+      m[9] * m[2] * m[15] -
+      m[9] * m[3] * m[14] -
+      m[13] * m[2] * m[11] +
+      m[13] * m[3] * m[10];
+
+    out[5] = m[0] * m[10] * m[15] -
+      m[0] * m[11] * m[14] -
+      m[8] * m[2] * m[15] +
+      m[8] * m[3] * m[14] +
+      m[12] * m[2] * m[11] -
+      m[12] * m[3] * m[10];
+
+    out[9] = -m[0] * m[9] * m[15] +
+      m[0] * m[11] * m[13] +
+      m[8] * m[1] * m[15] -
+      m[8] * m[3] * m[13] -
+      m[12] * m[1] * m[11] +
+      m[12] * m[3] * m[9];
+
+    out[13] = m[0] * m[9] * m[14] -
+      m[0] * m[10] * m[13] -
+      m[8] * m[1] * m[14] +
+      m[8] * m[2] * m[13] +
+      m[12] * m[1] * m[10] -
+      m[12] * m[2] * m[9];
+
+    out[2] = m[1] * m[6] * m[15] -
+      m[1] * m[7] * m[14] -
+      m[5] * m[2] * m[15] +
+      m[5] * m[3] * m[14] +
+      m[13] * m[2] * m[7] -
+      m[13] * m[3] * m[6];
+
+    out[6] = -m[0] * m[6] * m[15] +
+      m[0] * m[7] * m[14] +
+      m[4] * m[2] * m[15] -
+      m[4] * m[3] * m[14] -
+      m[12] * m[2] * m[7] +
+      m[12] * m[3] * m[6];
+
+    out[10] = m[0] * m[5] * m[15] -
+      m[0] * m[7] * m[13] -
+      m[4] * m[1] * m[15] +
+      m[4] * m[3] * m[13] +
+      m[12] * m[1] * m[7] -
+      m[12] * m[3] * m[5];
+
+    out[14] = -m[0] * m[5] * m[14] +
+      m[0] * m[6] * m[13] +
+      m[4] * m[1] * m[14] -
+      m[4] * m[2] * m[13] -
+      m[12] * m[1] * m[6] +
+      m[12] * m[2] * m[5];
+
+    out[3] = -m[1] * m[6] * m[11] +
+      m[1] * m[7] * m[10] +
+      m[5] * m[2] * m[11] -
+      m[5] * m[3] * m[10] -
+      m[9] * m[2] * m[7] +
+      m[9] * m[3] * m[6];
+
+    out[7] = m[0] * m[6] * m[11] -
+      m[0] * m[7] * m[10] -
+      m[4] * m[2] * m[11] +
+      m[4] * m[3] * m[10] +
+      m[8] * m[2] * m[7] -
+      m[8] * m[3] * m[6];
+
+    out[11] = -m[0] * m[5] * m[11] +
+      m[0] * m[7] * m[9] +
+      m[4] * m[1] * m[11] -
+      m[4] * m[3] * m[9] -
+      m[8] * m[1] * m[7] +
+      m[8] * m[3] * m[5];
+
+    out[15] = m[0] * m[5] * m[10] -
+      m[0] * m[6] * m[9] -
+      m[4] * m[1] * m[10] +
+      m[4] * m[2] * m[9] +
+      m[8] * m[1] * m[6] -
+      m[8] * m[2] * m[5];
+
+    det = m[0] * out[0] + m[1] * out[4] + m[2] * out[8] + m[3] * out[12];
+
+    for (i = 0; i < 16; ++i)
+      out[i] /= det;
+    return out;
+    }
+
+  float4x4 matrix_matrix_multiply(const float4x4& left, const float4x4& right)
+    {
+    float4x4 out;
+    float4 r[4];
+    transpose(r[0], r[1], r[2], r[3], left.col[0], left.col[1], left.col[2], left.col[3]);
+
+    out[0] = dot4(r[0], right.col[0]);
+    out[1] = dot4(r[1], right.col[0]);
+    out[2] = dot4(r[2], right.col[0]);
+    out[3] = dot4(r[3], right.col[0]);
+    out[4] = dot4(r[0], right.col[1]);
+    out[5] = dot4(r[1], right.col[1]);
+    out[6] = dot4(r[2], right.col[1]);
+    out[7] = dot4(r[3], right.col[1]);
+    out[8] = dot4(r[0], right.col[2]);
+    out[9] = dot4(r[1], right.col[2]);
+    out[10] = dot4(r[2], right.col[2]);
+    out[11] = dot4(r[3], right.col[2]);
+    out[12] = dot4(r[0], right.col[3]);
+    out[13] = dot4(r[1], right.col[3]);
+    out[14] = dot4(r[2], right.col[3]);
+    out[15] = dot4(r[3], right.col[3]);
+    return out;
+    }
+
+  float4x4 frustum(float left, float right, float bottom, float top, float near_plane, float far_plane)
+    {
+    //float4x4 out(_mm_set_ps(0.f, 0.f, 0.f, 2.f * near_plane / (right - left)), _mm_set_ps(0.f, 0.f, -2.f * near_plane / (top - bottom), 0.f),
+    //  _mm_set_ps(-1.f, -(far_plane + near_plane) / (far_plane - near_plane), -(top + bottom) / (top - bottom), (right + left) / (right - left)),
+    //  _mm_set_ps(0.f, -(2.f * far_plane * near_plane) / (far_plane - near_plane), 0.f, 0.f));
+    float4x4 out(float4(2.f * near_plane / (right - left), 0.f, 0.f, 0.f), 
+      float4(0.f, -2.f * near_plane / (top - bottom), 0.f, 0.f),
+      float4((right + left) / (right - left), -(top + bottom) / (top - bottom), -(far_plane + near_plane) / (far_plane - near_plane), -1.f),
+      float4(0.f, 0.f, -(2.f * far_plane * near_plane) / (far_plane - near_plane), 0.f));
+    return out;
+    }
+
+  float4x4 orthographic(float left, float right, float bottom, float top, float near_plane, float far_plane)
+    {
+    //float4x4 out(_mm_set_ps(-(right + left) / (right - left), 0.f, 0.f, 2.f / (right - left)),
+    //  _mm_set_ps(-(top + bottom) / (top - bottom), 0.f, 2.f / (top - bottom), 0.f),
+    //  _mm_set_ps(-(far_plane + near_plane) / (far_plane - near_plane), -2.f / (far_plane - near_plane), 0.f, 0.f),
+    //  _mm_set_ps(1.f, 0.f, 0.f, 0.f));
+    float4x4 out(float4(2.f / (right - left), 0.f, 0.f, -(right + left) / (right - left)),
+      float4(0.f, 2.f / (top - bottom), 0.f, -(top + bottom) / (top - bottom)),
+      float4(0.f, 0.f, -2.f / (far_plane - near_plane), -(far_plane + near_plane) / (far_plane - near_plane)),
+      float4(0.f, 0.f, 0.f, 1.f));
+    return out;
+    }
+
+#endif
+
+  float4 normalize(const float4& v)
+    {
+    double d = dot(v, v);
+    if (d < 1e-20f)
+      {
+      return float4(1, 0, 0, v[3]);
+      }
+    else
+      {
+      d = 1.0 / std::sqrt(d);
+      return float4((float)(v[0] * d), (float)(v[1] * d), (float)(v[2] * d), v[3]);
+      }
     }
 
   void solve_roll_pitch_yaw_transformation(float& rx, float& ry, float& rz, float& tx, float& ty, float& tz, const float4x4& m)
@@ -361,134 +844,15 @@ namespace RenderDoos
   float4x4 invert_orthonormal(const float4x4& m)
     {
     float4x4 out;
-    transpose(out.col[0], out.col[1], out.col[2], out.col[3], m.col[0], m.col[1], m.col[2], _mm_set_ps(1.f, 0.f, 0.f, 0.f));
+    transpose(out.col[0], out.col[1], out.col[2], out.col[3], m.col[0], m.col[1], m.col[2], float4(0.f, 0.f, 0.f, 1.f));
     out.col[3] = -(out.col[0] * m[12] + out.col[1] * m[13] + out.col[2] * m[14]);
     out.f[15] = 1.f;
-    return out;
-    }
-
-  // for column major matrix
-  // we use __m128 to represent 2x2 matrix as A = | A0  A1 |
-  //                                              | A2  A3 |
-  // 2x2 column major matrix multiply A*B
-  __m128 mat2mul(__m128 vec1, __m128 vec2)
-    {
-    const auto vec3 = _mm_mul_ps(vec1, _mm_shuffle_ps(vec2, vec2, _MM_SHUFFLE(3, 3, 0, 0)));
-    const auto vec4 = _mm_mul_ps(_mm_shuffle_ps(vec1, vec1, _MM_SHUFFLE(1, 0, 3, 2)), _mm_shuffle_ps(vec2, vec2, _MM_SHUFFLE(2, 2, 1, 1)));
-    return _mm_add_ps(vec3, vec4);
-    }
-
-  // 2x2 column major matrix adjugate multiply (A#)*B
-  __m128 mat2adjmul(__m128 vec1, __m128 vec2)
-    {
-    const auto vec3 = _mm_mul_ps(_mm_shuffle_ps(vec1, vec1, _MM_SHUFFLE(0, 3, 0, 3)), vec2);
-    const auto vec4 = _mm_mul_ps(_mm_shuffle_ps(vec1, vec1, _MM_SHUFFLE(1, 2, 1, 2)), _mm_shuffle_ps(vec2, vec2, _MM_SHUFFLE(2, 3, 0, 1)));
-    return _mm_sub_ps(vec3, vec4);
-    }
-
-  // 2x2 column major matrix multiply adjugate A*(B#)
-  __m128 mat2muladj(__m128 vec1, __m128 vec2)
-    {
-    const auto vec3 = _mm_mul_ps(vec1, _mm_shuffle_ps(vec2, vec2, _MM_SHUFFLE(0, 0, 3, 3)));
-    const auto vec4 = _mm_mul_ps(_mm_shuffle_ps(vec1, vec1, _MM_SHUFFLE(1, 0, 3, 2)), _mm_shuffle_ps(vec2, vec2, _MM_SHUFFLE(2, 2, 1, 1)));
-    return _mm_sub_ps(vec3, vec4);
-    }
-
-  float4x4 invert(const float4x4& m)
-    {
-    float4x4 out;
-    // sub matrices
-    __m128 A = _mm_shuffle_ps(m.col[0].m128, m.col[1].m128, _MM_SHUFFLE(1, 0, 1, 0));
-    __m128 C = _mm_shuffle_ps(m.col[0].m128, m.col[1].m128, _MM_SHUFFLE(3, 2, 3, 2));
-    __m128 B = _mm_shuffle_ps(m.col[2].m128, m.col[3].m128, _MM_SHUFFLE(1, 0, 1, 0));
-    __m128 D = _mm_shuffle_ps(m.col[2].m128, m.col[3].m128, _MM_SHUFFLE(3, 2, 3, 2));
-
-    // determinant as (|A| |B| |C| |D|)
-    __m128 detSub = _mm_sub_ps(_mm_mul_ps(
-      _mm_shuffle_ps(m.col[0].m128, m.col[2].m128, _MM_SHUFFLE(2, 0, 2, 0)),
-      _mm_shuffle_ps(m.col[1].m128, m.col[3].m128, _MM_SHUFFLE(3, 1, 3, 1))),
-      _mm_mul_ps(_mm_shuffle_ps(m.col[0].m128, m.col[2].m128, _MM_SHUFFLE(3, 1, 3, 1)),
-        _mm_shuffle_ps(m.col[1].m128, m.col[3].m128, _MM_SHUFFLE(2, 0, 2, 0))));
-    __m128 detA = _mm_shuffle_ps(detSub, detSub, _MM_SHUFFLE(0, 0, 0, 0));
-    __m128 detC = _mm_shuffle_ps(detSub, detSub, _MM_SHUFFLE(1, 1, 1, 1));
-    __m128 detB = _mm_shuffle_ps(detSub, detSub, _MM_SHUFFLE(2, 2, 2, 2));
-    __m128 detD = _mm_shuffle_ps(detSub, detSub, _MM_SHUFFLE(3, 3, 3, 3));
-
-    // let iM = 1/|M| * | X  Y |
-    //                  | Z  W |
-
-    // D#C
-    __m128 D_C = mat2adjmul(D, C);
-    // A#B
-    __m128 A_B = mat2adjmul(A, B);
-    // X# = |D|A - B(D#C)
-    __m128 X_ = _mm_sub_ps(_mm_mul_ps(detD, A), mat2mul(B, D_C));
-    // W# = |A|D - C(A#B)
-    __m128 W_ = _mm_sub_ps(_mm_mul_ps(detA, D), mat2mul(C, A_B));
-
-    // |M| = |A|*|D| + ... (continue later)
-    __m128 detM = _mm_mul_ps(detA, detD);
-
-    // Y# = |B|C - D(A#B)#
-    __m128 Y_ = _mm_sub_ps(_mm_mul_ps(detB, C), mat2muladj(D, A_B));
-    // Z# = |C|B - A(D#C)#
-    __m128 Z_ = _mm_sub_ps(_mm_mul_ps(detC, B), mat2muladj(A, D_C));
-
-    // |M| = |A|*|D| + |B|*|C| ... (continue later)
-    detM = _mm_add_ps(detM, _mm_mul_ps(detB, detC));
-
-    // tr((A#B)(D#C))
-    __m128 tr = _mm_mul_ps(A_B, _mm_shuffle_ps(D_C, D_C, _MM_SHUFFLE(3, 1, 2, 0)));
-    tr = _mm_hadd_ps(tr, tr);
-    tr = _mm_hadd_ps(tr, tr);
-    // |M| = |A|*|D| + |B|*|C| - tr((A#B)(D#C)
-    detM = _mm_sub_ps(detM, tr);
-
-    const __m128 adjSignMask = _mm_setr_ps(1.f, -1.f, -1.f, 1.f);
-    // (1/|M|, -1/|M|, -1/|M|, 1/|M|)
-    __m128 rDetM = _mm_div_ps(adjSignMask, detM);
-
-    X_ = _mm_mul_ps(X_, rDetM);
-    Y_ = _mm_mul_ps(Y_, rDetM);
-    Z_ = _mm_mul_ps(Z_, rDetM);
-    W_ = _mm_mul_ps(W_, rDetM);
-
-    // apply adjugate and store, here we combine adjugate shuffle and store shuffle
-    out.col[0] = float4(_mm_shuffle_ps(X_, Z_, _MM_SHUFFLE(1, 3, 1, 3)));
-    out.col[1] = float4(_mm_shuffle_ps(X_, Z_, _MM_SHUFFLE(0, 2, 0, 2)));
-    out.col[2] = float4(_mm_shuffle_ps(Y_, W_, _MM_SHUFFLE(1, 3, 1, 3)));
-    out.col[3] = float4(_mm_shuffle_ps(Y_, W_, _MM_SHUFFLE(0, 2, 0, 2)));
-
     return out;
     }
 
   float4 matrix_vector_multiply(const float4x4& m, const float4& v)
     {
     float4 out = m.col[0] * v[0] + m.col[1] * v[1] + m.col[2] * v[2] + m.col[3] * v[3];
-    return out;
-    }
-
-  float4x4 matrix_matrix_multiply(const float4x4& left, const float4x4& right)
-    {
-    float4x4 out;
-    float4 r[4];
-    transpose(r[0], r[1], r[2], r[3], left.col[0], left.col[1], left.col[2], left.col[3]);
-    out[0] = _mm_cvtss_f32(_mm_dp_ps(r[0].m128, right.col[0].m128, 255));
-    out[1] = _mm_cvtss_f32(_mm_dp_ps(r[1].m128, right.col[0].m128, 255));
-    out[2] = _mm_cvtss_f32(_mm_dp_ps(r[2].m128, right.col[0].m128, 255));
-    out[3] = _mm_cvtss_f32(_mm_dp_ps(r[3].m128, right.col[0].m128, 255));
-    out[4] = _mm_cvtss_f32(_mm_dp_ps(r[0].m128, right.col[1].m128, 255));
-    out[5] = _mm_cvtss_f32(_mm_dp_ps(r[1].m128, right.col[1].m128, 255));
-    out[6] = _mm_cvtss_f32(_mm_dp_ps(r[2].m128, right.col[1].m128, 255));
-    out[7] = _mm_cvtss_f32(_mm_dp_ps(r[3].m128, right.col[1].m128, 255));
-    out[8] = _mm_cvtss_f32(_mm_dp_ps(r[0].m128, right.col[2].m128, 255));
-    out[9] = _mm_cvtss_f32(_mm_dp_ps(r[1].m128, right.col[2].m128, 255));
-    out[10] = _mm_cvtss_f32(_mm_dp_ps(r[2].m128, right.col[2].m128, 255));
-    out[11] = _mm_cvtss_f32(_mm_dp_ps(r[3].m128, right.col[2].m128, 255));
-    out[12] = _mm_cvtss_f32(_mm_dp_ps(r[0].m128, right.col[3].m128, 255));
-    out[13] = _mm_cvtss_f32(_mm_dp_ps(r[1].m128, right.col[3].m128, 255));
-    out[14] = _mm_cvtss_f32(_mm_dp_ps(r[2].m128, right.col[3].m128, 255));
-    out[15] = _mm_cvtss_f32(_mm_dp_ps(r[3].m128, right.col[3].m128, 255));
     return out;
     }
 
@@ -689,22 +1053,5 @@ namespace RenderDoos
       m[12] * m[6] * m[9];
 
     return m[0] * inv0 + m[1] * inv4 + m[2] * inv8 + m[3] * inv12;
-    }
-
-  float4x4 frustum(float left, float right, float bottom, float top, float near_plane, float far_plane)
-    {
-    float4x4 out(_mm_set_ps(0.f, 0.f, 0.f, 2.f * near_plane / (right - left)), _mm_set_ps(0.f, 0.f, -2.f * near_plane / (top - bottom), 0.f),
-      _mm_set_ps(-1.f, -(far_plane + near_plane) / (far_plane - near_plane), -(top + bottom) / (top - bottom), (right + left) / (right - left)),
-      _mm_set_ps(0.f, -(2.f * far_plane * near_plane) / (far_plane - near_plane), 0.f, 0.f));
-    return out;
-    }
-
-  float4x4 orthographic(float left, float right, float bottom, float top, float near_plane, float far_plane)
-    {
-    float4x4 out(_mm_set_ps(-(right + left) / (right - left), 0.f, 0.f, 2.f / (right - left)),
-      _mm_set_ps(-(top + bottom) / (top - bottom), 0.f, 2.f / (top - bottom), 0.f),
-      _mm_set_ps(-(far_plane + near_plane) / (far_plane - near_plane), -2.f / (far_plane - near_plane), 0.f, 0.f),
-      _mm_set_ps(1.f, 0.f, 0.f, 0.f));
-    return out;
     }
   }

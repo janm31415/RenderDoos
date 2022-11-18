@@ -1,10 +1,12 @@
 #pragma once
 
+#ifdef RENDERDOOS_SIMD
 #ifdef RENDERDOOS_ARM
 #include "sse2neon.h"
 #else
 #include <immintrin.h>
 #include <emmintrin.h>
+#endif
 #endif
 
 #include <stdint.h>
@@ -19,7 +21,9 @@ namespace RenderDoos
     {
     union
       {
+#ifdef RENDERDOOS_SIMD
       __m128 m128;
+#endif
       float f[4];
       uint32_t u[4];
       int32_t i[4];
@@ -38,7 +42,9 @@ namespace RenderDoos
       }
 
     float4();
+#ifdef RENDERDOOS_SIMD
     float4(const __m128 in);
+#endif
     float4(float f);
     float4(float _x, float _y, float _z);
     float4(float _x, float _y, float _z, float _w);
@@ -110,6 +116,8 @@ namespace RenderDoos
   float4x4 make_translation(float x, float y, float z);
   float4x4 transpose(const float4x4& m);
   float4x4 invert_orthonormal(const float4x4& m);
+
+#ifdef RENDERDOOS_SIMD
   // for column major matrix
   // we use __m128 to represent 2x2 matrix as A = | A0  A1 |
   //                                              | A2  A3 |
@@ -119,6 +127,7 @@ namespace RenderDoos
   __m128 mat2adjmul(__m128 vec1, __m128 vec2);
   // 2x2 column major matrix multiply adjugate A*(B#)
   __m128 mat2muladj(__m128 vec1, __m128 vec2);
+#endif
   float4x4 invert(const float4x4& m);
   float4 matrix_vector_multiply(const float4x4& m, const float4& v);
   float4x4 matrix_matrix_multiply(const float4x4& left, const float4x4& right);
