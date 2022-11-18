@@ -3,7 +3,11 @@
 #include <cmath>
 
 #ifndef RENDERDOOS_SIMD
-#include <utility>
+#ifdef _WIN32
+#include <utility> // for std::min and std::max.
+#else
+#include <vector> // for std::min and std::max.
+#endif
 #endif
 
 namespace RenderDoos
