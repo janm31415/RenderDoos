@@ -55,11 +55,6 @@ endif (UNIX)
 
 add_library(RenderDoos STATIC ${HDRS} ${SRCS} ${SHADERS})
 
-if (NOT RENDERDOOS_FOR_IOS)
-target_compile_definitions(RenderDoos PUBLIC RENDERDOOS_OPENGL)
-endif (NOT RENDERDOOS_FOR_IOS)
-
-
 if (WIN32)
 target_compile_definitions(RenderDoos PRIVATE _CRT_SECURE_NO_WARNINGS _SCL_SECURE_NO_WARNINGS NOMINMAX _UNICODE UNICODE MEMORY_LEAK_TRACKING)
 endif (WIN32)
