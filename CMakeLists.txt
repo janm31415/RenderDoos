@@ -24,17 +24,17 @@ if (${RENDERDOOS_PLATFORM} STREQUAL "ios")
 set(CMAKE_OSX_SYSROOT iphoneos)
 endif (${RENDERDOOS_PLATFORM} STREQUAL "ios")
 
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 add_subdirectory(RenderDoos)
 
 if (${RENDERDOOS_PLATFORM} STREQUAL "win32")
 add_subdirectory(glew)
+set_target_properties (RenderDoosGlew PROPERTIES FOLDER glew)
 endif (${RENDERDOOS_PLATFORM} STREQUAL "win32")
 if (${RENDERDOOS_PLATFORM} STREQUAL "linux")
 add_subdirectory(glew)
+set_target_properties (RenderDoosGlew PROPERTIES FOLDER glew)
 endif (${RENDERDOOS_PLATFORM} STREQUAL "linux")
 
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
-set_target_properties (RenderDoosGlew PROPERTIES FOLDER glew)
 
