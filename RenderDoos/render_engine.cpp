@@ -29,24 +29,25 @@ namespace RenderDoos
       throw std::runtime_error("No render context!");
     }
 
-  void render_engine::init(void* device, renderer_type::backend vendor)
+  void render_engine::init(void* device, void* library, renderer_type::backend vendor)
     {
     _vendor = renderer_type::NONE;
     switch (vendor)
       {
       case renderer_type::AUTO:
 #if defined(RENDERDOOS_METAL)
-        _context = new render_context_metal((MTL::Device*)device);
+        _context = new render_context_metal((MTL::Device*)device, (MTL::Library*)library);
         _vendor = renderer_type::METAL;
 #elif defined(RENDERDOOS_OPENGL)
         (void)device;
+        (void)library;
         _context = new render_context_gl();
         _vendor = renderer_type::OPENGL;
 #endif
         break;
       case renderer_type::METAL:
 #if defined(RENDERDOOS_METAL)
-        _context = new render_context_metal((MTL::Device*)device);
+        _context = new render_context_metal((MTL::Device*)device, (MTL::Library*)library);
         _vendor = renderer_type::METAL;
 #endif
         break;

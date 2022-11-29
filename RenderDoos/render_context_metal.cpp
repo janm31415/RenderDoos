@@ -39,14 +39,17 @@ static uniform_alignment uniform_type_to_alignment[] =
 };
 }
 
-render_context_metal::render_context_metal(MTL::Device* device) : render_context(), mp_device(device), mp_default_library(nullptr),
+render_context_metal::render_context_metal(MTL::Device* device, MTL::Library* library) : render_context(), mp_device(device), mp_default_library(nullptr),
 mp_command_queue(nullptr), mp_drawable(nullptr), mp_command_buffer(nullptr), mp_render_command_encoder(nullptr), mp_screen(nullptr),
 mp_depth_stencil_state(nullptr), mp_compute_command_encoder(nullptr)
 {
   memset(m_pipeline_state_cache, 0, sizeof(RenderPipelineStateCache)*MAX_PIPELINESTATE_CACHE);
   memset(m_compute_pipeline_state_cache, 0, sizeof(ComputePipelineStateCache)*MAX_PIPELINESTATE_CACHE);
   assert(mp_device != nullptr);
-  mp_default_library = mp_device->newDefaultLibrary();
+  if (library == nullptr)
+    mp_default_library = mp_device->newDefaultLibrary();
+  else
+    mp_default_library = library;
   mp_command_queue = mp_device->newCommandQueue();
   _semaphore = dispatch_semaphore_create(1);
   MTL::DepthStencilDescriptor* depth_descr = MTL::DepthStencilDescriptor::alloc()->init();

@@ -16,7 +16,7 @@ namespace RenderDoos
   class render_context_metal : public render_context
     {
     public:
-      render_context_metal(MTL::Device* device);
+      render_context_metal(MTL::Device* device, MTL::Library* library);
       ~render_context_metal();
       
       virtual void frame_begin(render_drawables drawables);

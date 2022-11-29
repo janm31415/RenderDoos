@@ -25,7 +25,7 @@ namespace RenderDoos
       render_engine();
       ~render_engine();
 
-      void init(void* device=nullptr, renderer_type::backend vendor = renderer_type::AUTO);
+      void init(void* device=nullptr, void* library = nullptr, renderer_type::backend vendor = renderer_type::AUTO);
       void destroy();
       
       renderer_type::backend get_renderer_type() const;
