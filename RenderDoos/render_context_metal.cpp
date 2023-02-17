@@ -173,6 +173,7 @@ int32_t render_context_metal::_add_texture(int32_t w, int32_t h, int32_t format,
       tex->h = h;
       tex->format = format;
       tex->flags = TEX_ALLOCATED;
+      tex->texture_target = TEX_TARGET_2D;
       tex->usage_flags = usage_flags;
       
       MTL::TextureDescriptor* descr = MTL::TextureDescriptor::alloc()->init();

@@ -22,6 +22,14 @@ namespace RenderDoos
       virtual int32_t add_texture(int32_t w, int32_t h, int32_t format, const uint16_t* data, int32_t flags);
       virtual bool update_texture(int32_t handle, const uint16_t* data);
       virtual int32_t add_texture(int32_t w, int32_t h, int32_t format, const uint8_t* data, int32_t flags);
+      virtual int32_t add_cubemap_texture(int32_t w, int32_t h, int32_t format,
+        const uint8_t* front,
+        const uint8_t* back,
+        const uint8_t* left,
+        const uint8_t* right,
+        const uint8_t* top,
+        const uint8_t* bottom,
+        int32_t usage_flags);
       virtual bool update_texture(int32_t handle, const uint8_t* data);
       virtual void remove_texture(int32_t handle);
       virtual void bind_texture_to_channel(int32_t handle, int32_t channel, int32_t flags = TEX_WRAP_REPEAT | TEX_FILTER_LINEAR);

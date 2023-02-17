@@ -339,6 +339,7 @@ namespace RenderDoos
         tex->format = format;
         tex->flags = TEX_ALLOCATED;
         tex->usage_flags = usage_flags;
+        tex->texture_target = TEX_TARGET_2D;
         glGenTextures(1, &tex->gl_texture_id);
         glCheckError();
         glBindTexture(GL_TEXTURE_2D, tex->gl_texture_id);
@@ -368,6 +369,47 @@ namespace RenderDoos
   int32_t render_context_gl::add_texture(int32_t w, int32_t h, int32_t format, const uint8_t* data, int32_t usage_flags)
     {
     return _add_texture(w, h, format, (const void*)data, usage_flags, 1);
+    }
+
+  int32_t render_context_gl::add_cubemap_texture(int32_t w, int32_t h, int32_t format,
+    const uint8_t* front,
+    const uint8_t* back,
+    const uint8_t* left,
+    const uint8_t* right,
+    const uint8_t* top,
+    const uint8_t* bottom,
+    int32_t usage_flags)
+    {
+    texture* tex = _textures;
+    for (int32_t i = 0; i < MAX_TEXTURE; ++i)
+      {
+      if (tex->flags == 0)
+        {
+        tex->w = w;
+        tex->h = h;
+        tex->format = format;
+        tex->flags = TEX_ALLOCATED;
+        tex->usage_flags = usage_flags;
+        tex->texture_target = TEX_TARGET_CUBEMAP;
+        glGenTextures(1, &tex->gl_texture_id);
+        glCheckError();
+        glBindTexture(GL_TEXTURE_CUBE_MAP, tex->gl_texture_id);
+        glCheckError();
+        glPixelStorei(GL_PACK_ALIGNMENT, 1);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // opengl by default aligns rows on 4 bytes I think 
+        //glTexStorage2D(GL_TEXTURE_2D, 1, formats[tex->format], w, h);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, formats[tex->format], w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, right);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, formats[tex->format], w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, left);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, formats[tex->format], w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, top);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, formats[tex->format], w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, bottom);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, formats[tex->format], w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, front);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, formats[tex->format], w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, back);
+        glCheckError();
+        return i;
+        }
+      ++tex;
+      }
+    return -1;
     }
 
   void render_context_gl::remove_texture(int32_t handle)
@@ -473,34 +515,49 @@ namespace RenderDoos
       return;
     glActiveTexture(GL_TEXTURE0 + channel);
     glCheckError();
-    glBindTexture(GL_TEXTURE_2D, tex->gl_texture_id);
-    glCheckError();
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, flags & TEX_WRAP_CLAMP_TO_EDGE ? GL_CLAMP_TO_EDGE : GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, flags & TEX_WRAP_CLAMP_TO_EDGE ? GL_CLAMP_TO_EDGE : GL_REPEAT);
-    if (flags & TEX_FILTER_NEAREST)
+    if (tex->texture_target == TEX_TARGET_2D)
       {
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-      }
-    else if (flags & TEX_FILTER_LINEAR_MIPMAP_LINEAR)
-      {
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-      }
-    else
-      {
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-      }
+      glBindTexture(GL_TEXTURE_2D, tex->gl_texture_id);
+      glCheckError();
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, flags & TEX_WRAP_CLAMP_TO_EDGE ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, flags & TEX_WRAP_CLAMP_TO_EDGE ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+      if (flags & TEX_FILTER_NEAREST)
+        {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        }
+      else if (flags & TEX_FILTER_LINEAR_MIPMAP_LINEAR)
+        {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        }
+      else
+        {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        }
 
-    GLint access = GL_READ_WRITE;
-    if ((tex->usage_flags & TEX_USAGE_READ) == 0)
-      access = GL_WRITE_ONLY;
-    if ((flags & TEX_USAGE_WRITE) == 0)
-      access = GL_READ_ONLY;
-    glBindImageTexture(channel, tex->gl_texture_id, 0, GL_FALSE, 0, access, formats[tex->format]);
+      GLint access = GL_READ_WRITE;
+      if ((tex->usage_flags & TEX_USAGE_READ) == 0)
+        access = GL_WRITE_ONLY;
+      if ((flags & TEX_USAGE_WRITE) == 0)
+        access = GL_READ_ONLY;
+      glBindImageTexture(channel, tex->gl_texture_id, 0, GL_FALSE, 0, access, formats[tex->format]);
 
-    glCheckError();
+      glCheckError();
+      }
+    if (tex->texture_target == TEX_TARGET_CUBEMAP)
+      {
+      glBindTexture(GL_TEXTURE_CUBE_MAP, tex->gl_texture_id);
+      glCheckError();
+      glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+      glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+      glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+      glCheckError();
+      }
     }
 
   int32_t render_context_gl::add_geometry(int32_t vertex_declaration_type)
@@ -1223,7 +1280,7 @@ namespace RenderDoos
     if (location == -1)
       {
       throw std::runtime_error("Uniform name does not correspond to an active uniform variable in program, or the name starts with the reserved prefix gl_, or the name is associated with an atomic counter or a named uniform block.");
-      }
+    }
 #endif
 
     if (location == -1)
@@ -1332,7 +1389,7 @@ namespace RenderDoos
       }
 
     glCheckError();
-    }
+  }
 
   int32_t render_context_gl::add_query()
     {

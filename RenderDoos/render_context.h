@@ -29,6 +29,8 @@ namespace RenderDoos
 #define TEX_USAGE_READ 1
 #define TEX_USAGE_WRITE 2
 #define TEX_USAGE_RENDER_TARGET 4
+#define TEX_TARGET_2D 1
+#define TEX_TARGET_CUBEMAP 2
 
 #define GEOMETRY_ALLOCATED 1
 
@@ -74,6 +76,7 @@ namespace RenderDoos
     int32_t flags;
     int32_t usage_flags;
     int32_t format;
+    uint32_t texture_target;
     uint32_t gl_texture_id;
     void* metal_texture;
     };
@@ -251,6 +254,14 @@ namespace RenderDoos
       virtual int32_t add_texture(int32_t w, int32_t h, int32_t format, const uint16_t* data, int32_t usage_flags) = 0;
       virtual bool update_texture(int32_t handle, const uint16_t* data) = 0;
       virtual int32_t add_texture(int32_t w, int32_t h, int32_t format, const uint8_t* data, int32_t usage_flags) = 0;
+      virtual int32_t add_cubemap_texture(int32_t w, int32_t h, int32_t format,
+        const uint8_t* front,
+        const uint8_t* back,
+        const uint8_t* left,
+        const uint8_t* right,
+        const uint8_t* top,
+        const uint8_t* bottom,
+        int32_t usage_flags) = 0;
       virtual bool update_texture(int32_t handle, const uint8_t* data) = 0;
       virtual bool update_texture(int32_t handle, const float* data) = 0;
       virtual void remove_texture(int32_t handle) = 0;
