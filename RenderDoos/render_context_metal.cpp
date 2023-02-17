@@ -253,6 +253,18 @@ int32_t render_context_metal::add_texture(int32_t w, int32_t h, int32_t format, 
   return _add_texture(w, h, format, (const void*)data, usage_flags, 1);
 }
 
+int32_t render_context_metal::add_cubemap_texture(int32_t w, int32_t h, int32_t format,
+        const uint8_t* front,
+        const uint8_t* back,
+        const uint8_t* left,
+        const uint8_t* right,
+        const uint8_t* top,
+        const uint8_t* bottom,
+        int32_t usage_flags)
+{
+  return -1;
+}
+
 bool render_context_metal::update_texture(int32_t handle, const uint8_t* data)
 {
   if (handle < 0 || handle >= MAX_TEXTURE)
