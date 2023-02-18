@@ -121,6 +121,18 @@ namespace RenderDoos
     {
     return _context->add_texture(w, h, format, data, usage_flags);
     }
+
+  int32_t render_engine::add_cubemap_texture(int32_t w, int32_t h, int32_t format,
+    const uint8_t* front,
+    const uint8_t* back,
+    const uint8_t* left,
+    const uint8_t* right,
+    const uint8_t* top,
+    const uint8_t* bottom,
+    int32_t usage_flags)
+    {
+    return _context->add_cubemap_texture(w, h, format, front, back, left, right, top, bottom, usage_flags);
+    }
     
   void render_engine::remove_texture(int32_t handle)
     {

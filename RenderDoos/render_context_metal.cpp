@@ -175,6 +175,7 @@ int32_t render_context_metal::_add_texture(int32_t w, int32_t h, int32_t format,
       tex->h = h;
       tex->format = format;
       tex->flags = TEX_ALLOCATED;
+      tex->texture_target = TEX_TARGET_2D;
       tex->usage_flags = usage_flags;
       
       MTL::TextureDescriptor* descr = MTL::TextureDescriptor::alloc()->init();
@@ -252,6 +253,99 @@ int32_t render_context_metal::add_texture(int32_t w, int32_t h, int32_t format, 
 int32_t render_context_metal::add_texture(int32_t w, int32_t h, int32_t format, const uint8_t* data, int32_t usage_flags)
 {
   return _add_texture(w, h, format, (const void*)data, usage_flags, 1);
+}
+
+int32_t render_context_metal::add_cubemap_texture(int32_t w, int32_t h, int32_t format,
+        const uint8_t* front,
+        const uint8_t* back,
+        const uint8_t* left,
+        const uint8_t* right,
+        const uint8_t* top,
+        const uint8_t* bottom,
+        int32_t usage_flags)
+{
+  texture* tex = _textures;
+  for (int32_t i = 0; i < MAX_TEXTURE; ++i)
+  {
+    if (tex->flags == 0)
+    {
+      tex->w = w;
+      tex->h = h;
+      tex->format = format;
+      tex->flags = TEX_ALLOCATED;
+      tex->texture_target = TEX_TARGET_CUBEMAP;
+      tex->usage_flags = usage_flags;
+      
+      MTL::TextureDescriptor* descr = MTL::TextureDescriptor::alloc()->init();
+      descr->setTextureType(MTL::TextureTypeCube);
+      descr->setWidth(w);
+      descr->setHeight(h);
+      descr->setSampleCount(1);
+      switch (format)
+      {
+        case texture_format_rgba8:
+          descr->setPixelFormat(MTL::PixelFormatRGBA8Unorm);
+          break;
+        case texture_format_rgba32f:
+          descr->setPixelFormat(MTL::PixelFormatRGBA32Float);
+          break;
+        case texture_format_bgra8:
+          descr->setPixelFormat(MTL::PixelFormatBGRA8Unorm);
+          break;
+        case texture_format_rgba8ui:
+          descr->setPixelFormat(MTL::PixelFormatRGBA8Uint);
+          break;
+        case texture_format_depth:
+          descr->setPixelFormat(MTL::PixelFormatDepth32Float);
+          break;
+        case texture_format_r32ui:
+          descr->setPixelFormat(MTL::PixelFormatR32Uint);
+          break;
+        case texture_format_r32i:
+          descr->setPixelFormat(MTL::PixelFormatR32Sint);
+          break;
+        case texture_format_r32f:
+          descr->setPixelFormat(MTL::PixelFormatR32Float);
+          break;
+        case texture_format_r8ui:
+          descr->setPixelFormat(MTL::PixelFormatR8Uint);
+          break;
+        case texture_format_r8i:
+          descr->setPixelFormat(MTL::PixelFormatR8Sint);
+          break;
+        case texture_format_rgba16:
+          descr->setPixelFormat(MTL::PixelFormatRGBA16Unorm);
+          break;
+        default:
+          descr->setPixelFormat(MTL::PixelFormatInvalid);
+          break;
+      }
+      descr->setStorageMode(MTL::StorageModeShared);
+      MTL::TextureUsage usage = 0;
+      if (usage_flags & TEX_USAGE_READ)
+        usage |= MTL::TextureUsageShaderRead;
+      if (usage_flags & TEX_USAGE_WRITE)
+        usage |= MTL::TextureUsageShaderWrite;
+      if (usage_flags & TEX_USAGE_RENDER_TARGET)
+        usage |= MTL::TextureUsageRenderTarget;
+      descr->setUsage(usage);
+      MTL::Texture* p_color_texture = mp_device->newTexture(descr);
+      tex->metal_texture = (void*)p_color_texture;
+      descr->release();
+      if (tex->format == texture_format_rgba8 || tex->format == texture_format_bgra8) {
+  
+        p_color_texture->replaceRegion(MTL::Region(0, 0, tex->w, tex->h), 0, 0, right, tex->w*4*sizeof(uint8_t), tex->w*4*tex->h*sizeof(uint8_t));
+        p_color_texture->replaceRegion(MTL::Region(0, 0, tex->w, tex->h), 0, 1, left, tex->w*4*sizeof(uint8_t), tex->w*4*tex->h*sizeof(uint8_t));
+        p_color_texture->replaceRegion(MTL::Region(0, 0, tex->w, tex->h), 0, 2, top, tex->w*4*sizeof(uint8_t), tex->w*4*tex->h*sizeof(uint8_t));
+        p_color_texture->replaceRegion(MTL::Region(0, 0, tex->w, tex->h), 0, 3, bottom, tex->w*4*sizeof(uint8_t), tex->w*4*tex->h*sizeof(uint8_t));
+        p_color_texture->replaceRegion(MTL::Region(0, 0, tex->w, tex->h), 0, 4, front, tex->w*4*sizeof(uint8_t), tex->w*4*tex->h*sizeof(uint8_t));
+        p_color_texture->replaceRegion(MTL::Region(0, 0, tex->w, tex->h), 0, 5, back, tex->w*4*sizeof(uint8_t), tex->w*4*tex->h*sizeof(uint8_t));
+      }
+      return i;
+    }
+    ++tex;
+  }
+  return -1;
 }
 
 bool render_context_metal::update_texture(int32_t handle, const uint8_t* data)

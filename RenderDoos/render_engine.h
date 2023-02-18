@@ -38,6 +38,14 @@ namespace RenderDoos
       int32_t add_texture(int32_t w, int32_t h, int32_t format, const uint16_t* data, int32_t usage_flags = TEX_USAGE_READ | TEX_USAGE_RENDER_TARGET);
       bool update_texture(int32_t handle, const uint16_t* data);
       int32_t add_texture(int32_t w, int32_t h, int32_t format, const uint8_t* data, int32_t usage_flags = TEX_USAGE_READ | TEX_USAGE_RENDER_TARGET);
+      int32_t add_cubemap_texture(int32_t w, int32_t h, int32_t format, 
+        const uint8_t* front, 
+        const uint8_t* back,
+        const uint8_t* left,
+        const uint8_t* right,
+        const uint8_t* top,
+        const uint8_t* bottom,
+        int32_t usage_flags = TEX_USAGE_READ | TEX_USAGE_RENDER_TARGET);
       bool update_texture(int32_t handle, const uint8_t* data);
       bool update_texture(int32_t handle, const float* data);
       void remove_texture(int32_t handle);
@@ -92,6 +100,7 @@ namespace RenderDoos
       void set_model_view_properties(const model_view_properties& props);
 
       const float4x4& get_view_project() const { return _last_view_project; }
+      const float4x4& get_projection() const { return _last_projection; }
       const float4x4& get_camera_space() const { return _last_camera; }
       const float4& get_light_dir() const { return _mv_props.light_dir; }
       const float4& get_light_pos() const { return _mv_props.light_pos; }
