@@ -132,8 +132,10 @@ void render_context_metal::renderpass_begin(const renderpass_descriptor& descr)
       }
     }
     p_descriptor->colorAttachments()->object(0)->setClearColor(MTL::ClearColor(red, green, blue, alpha));
-    p_descriptor->colorAttachments()->object(0)->setLoadAction((descr.clear_flags&CLEAR_COLOR) ? MTL::LoadActionClear : MTL::LoadActionDontCare);
-    p_descriptor->depthAttachment()->setLoadAction((descr.clear_flags&CLEAR_DEPTH) ? MTL::LoadActionClear : MTL::LoadActionDontCare);
+    p_descriptor->colorAttachments()->object(0)->setLoadAction((descr.clear_flags&CLEAR_COLOR) ? MTL::LoadActionClear : MTL::LoadActionLoad);
+    p_descriptor->colorAttachments()->object(0)->setStoreAction(MTL::StoreActionStore);
+    p_descriptor->depthAttachment()->setLoadAction((descr.clear_flags&CLEAR_DEPTH) ? MTL::LoadActionClear : MTL::LoadActionLoad);
+    p_descriptor->depthAttachment()->setStoreAction(MTL::StoreActionStore);
     p_descriptor->depthAttachment()->setClearDepth(descr.clear_depth);
     
     
