@@ -329,4 +329,9 @@ namespace RenderDoos
     _context->set_blending_enabled(enable);
     }
 
+  void render_engine::set_blending_function(blending_type source, blending_type destination)
+    {
+    _context->set_blending_function(source, destination);
+    }
+
   } // namespace RenderDoos

@@ -84,6 +84,7 @@ namespace RenderDoos
       virtual uint64_t get_query_result(int32_t handle);
       
       virtual void set_blending_enabled(bool enable);
+      virtual void set_blending_function(blending_type source, blending_type destination);void set_blending_function(blending_type source, blending_type destination);
 
     private:
       void _allocate_geometry_buffer(geometry_ref& ref, int32_t tuple_size, int32_t count, int32_t type, void** pointer);
@@ -109,6 +110,7 @@ namespace RenderDoos
       MTL::DepthStencilState* mp_depth_stencil_state;
       renderpass_descriptor m_current_renderpass_descriptor;
       bool _enable_blending;
+      blending_type _blending_source, _blending_destination;
       
       struct RenderPipelineStateCache
       {

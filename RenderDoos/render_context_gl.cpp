@@ -1475,13 +1475,64 @@ namespace RenderDoos
     {
     if (enable)
       {
-      glEnable(GL_BLEND);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      glEnable(GL_BLEND);     
       }
     else
       {
       glDisable(GL_BLEND);
       }
+    glCheckError();
+    }
+
+  namespace
+    {
+    GLenum convert(blending_type source)
+      {
+      GLenum sfactor = GL_ONE;
+      switch (source)
+        {
+        case blending_type::zero:
+          sfactor = GL_ZERO;
+          break;
+        case blending_type::one:
+          sfactor = GL_ONE;
+          break;
+        case blending_type::src_color:
+          sfactor = GL_SRC_COLOR;
+          break;
+        case blending_type::one_minus_src_color:
+          sfactor = GL_ONE_MINUS_SRC_COLOR;
+          break;
+        case blending_type::dst_color:
+          sfactor = GL_DST_COLOR;
+          break;
+        case blending_type::one_minus_dst_color:
+          sfactor = GL_ONE_MINUS_DST_COLOR;
+          break;
+        case blending_type::src_alpha:
+          sfactor = GL_SRC_ALPHA;
+          break;
+        case blending_type::one_minus_src_alpha:
+          sfactor = GL_ONE_MINUS_SRC_ALPHA;
+          break;
+        case blending_type::dst_alpha:
+          sfactor = GL_DST_ALPHA;
+          break;
+        case blending_type::one_minus_dst_alpha:
+          sfactor = GL_ONE_MINUS_DST_ALPHA;
+          break;
+        default:
+          break;
+        }
+      return sfactor;
+      }
+    }
+
+  void render_context_gl::set_blending_function(blending_type source, blending_type destination)
+    {
+    GLenum sfactor = convert(source);
+    GLenum dfactor = convert(destination);    
+    glBlendFunc(sfactor, dfactor);
     glCheckError();
     }
 

@@ -77,6 +77,7 @@ namespace RenderDoos
       virtual uint64_t get_query_result(int32_t handle);
 
       virtual void set_blending_enabled(bool enable);
+      virtual void set_blending_function(blending_type source, blending_type destination);
 
     private:
       void _clear(int32_t flags, uint32_t color);

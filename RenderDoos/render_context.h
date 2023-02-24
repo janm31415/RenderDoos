@@ -52,6 +52,20 @@ namespace RenderDoos
 #define CLEAR_COLOR 1
 #define CLEAR_DEPTH 2
 
+  enum class blending_type
+    {
+    zero,
+    one,
+    src_color,
+    one_minus_src_color,
+    dst_color,
+    one_minus_dst_color,
+    src_alpha,
+    one_minus_src_alpha,
+    dst_alpha,
+    one_minus_dst_alpha
+    };
+
   struct vertex_standard // 32 bytes
     {
     float x, y, z;
@@ -315,6 +329,7 @@ namespace RenderDoos
       virtual uint64_t get_query_result(int32_t handle) = 0;
 
       virtual void set_blending_enabled(bool enable) = 0;
+      virtual void set_blending_function(blending_type source, blending_type destination) = 0;
 
     protected:
       texture _textures[MAX_TEXTURE];

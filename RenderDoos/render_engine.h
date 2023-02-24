@@ -107,7 +107,7 @@ namespace RenderDoos
       const model_view_properties& get_model_view_properties() const { return _mv_props; }
 
       void set_blending_enabled(bool enable);
-
+      void set_blending_function(blending_type source, blending_type destination);
 
     private:
       void _check_context();
