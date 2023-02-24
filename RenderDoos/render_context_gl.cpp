@@ -1536,4 +1536,37 @@ namespace RenderDoos
     glCheckError();
     }
 
+  namespace
+    {
+    GLenum convert(blending_equation_type func)
+      {
+      GLenum f = GL_FUNC_ADD;
+      switch (func)
+        {
+        case blending_equation_type::add:
+          f = GL_FUNC_ADD;
+          break;
+        case blending_equation_type::subtract:
+          f = GL_FUNC_SUBTRACT;
+          break;
+        case blending_equation_type::reverse_subtract:
+          f = GL_FUNC_REVERSE_SUBTRACT;
+          break;
+        case blending_equation_type::minimum:
+          f = GL_MIN;
+          break;
+        case blending_equation_type::maximum:
+          f = GL_MAX;
+          break;
+        }
+      return f;
+      }
+    }
+
+  void render_context_gl::set_blending_equation(blending_equation_type func)
+    {
+    glBlendEquation(convert(func));
+    glCheckError();
+    }
+
   } // namespace RenderDoos

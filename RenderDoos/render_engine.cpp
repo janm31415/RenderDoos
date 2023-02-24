@@ -334,4 +334,9 @@ namespace RenderDoos
     _context->set_blending_function(source, destination);
     }
 
+  void render_engine::set_blending_equation(blending_equation_type func)
+    {
+    _context->set_blending_equation(func);
+    }
+
   } // namespace RenderDoos

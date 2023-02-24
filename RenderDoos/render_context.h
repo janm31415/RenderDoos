@@ -66,6 +66,15 @@ namespace RenderDoos
     one_minus_dst_alpha
     };
 
+  enum class blending_equation_type
+    {
+    add,
+    subtract,
+    reverse_subtract,
+    minimum,
+    maximum
+    };
+
   struct vertex_standard // 32 bytes
     {
     float x, y, z;
@@ -330,6 +339,7 @@ namespace RenderDoos
 
       virtual void set_blending_enabled(bool enable) = 0;
       virtual void set_blending_function(blending_type source, blending_type destination) = 0;
+      virtual void set_blending_equation(blending_equation_type func) = 0;
 
     protected:
       texture _textures[MAX_TEXTURE];

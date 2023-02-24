@@ -41,7 +41,8 @@ namespace RenderDoos
 
   render_context_metal::render_context_metal(MTL::Device* device, MTL::Library* library) : render_context(), mp_device(device), mp_default_library(nullptr),
     mp_command_queue(nullptr), mp_drawable(nullptr), mp_command_buffer(nullptr), mp_render_command_encoder(nullptr), mp_screen(nullptr),
-    mp_depth_stencil_state(nullptr), mp_compute_command_encoder(nullptr), _enable_blending(false), _blending_source(blending_type::one), _blending_destination(blending_type::one)
+    mp_depth_stencil_state(nullptr), mp_compute_command_encoder(nullptr), _enable_blending(false), _blending_source(blending_type::one), _blending_destination(blending_type::one),
+    _blending_func(blending_equation_type::add)
     {
     memset(m_pipeline_state_cache, 0, sizeof(RenderPipelineStateCache) * MAX_PIPELINESTATE_CACHE);
     memset(m_compute_pipeline_state_cache, 0, sizeof(ComputePipelineStateCache) * MAX_PIPELINESTATE_CACHE);
@@ -1495,6 +1496,11 @@ namespace RenderDoos
     {
     _blending_source = source;
     _blending_destination = destination;
+    }
+
+  void render_context_metal::set_blending_equation(blending_equation_type func)
+    {
+    _blending_func = func;
     }
 
   } // namespace RenderDoos
