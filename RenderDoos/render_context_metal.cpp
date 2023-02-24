@@ -1199,6 +1199,48 @@ namespace RenderDoos
       }
 
     }
+    
+  namespace
+    {
+    MTL::BlendFactor convert(blending_type source)
+      {
+      MTL::BlendFactor factor = MTL::BlendFactorOne;
+      switch (source)
+        {
+          case blending_type::zero:
+            factor = MTL::BlendFactorZero;
+            break;
+          case blending_type::one:
+          factor = MTL::BlendFactorOne;
+            break;
+          case blending_type::src_color:
+            factor = MTL::BlendFactorSourceColor;
+            break;
+          case blending_type::one_minus_src_color:
+            factor = MTL::BlendFactorOneMinusSourceColor;
+            break;
+          case blending_type::dst_color:
+            factor = MTL::BlendFactorDestinationColor;
+            break;
+          case blending_type::one_minus_dst_color:
+            factor = MTL::BlendFactorOneMinusDestinationColor;
+            break;
+          case blending_type::src_alpha:
+            factor = MTL::BlendFactorSourceAlpha;
+            break;
+          case blending_type::one_minus_src_alpha:
+            factor = MTL::BlendFactorOneMinusSourceAlpha;
+            break;
+          case blending_type::dst_alpha:
+            factor = MTL::BlendFactorDestinationAlpha;
+            break;
+          case blending_type::one_minus_dst_alpha:
+            factor = MTL::BlendFactorOneMinusDestinationAlpha;
+            break;
+        }
+        return factor;
+      }
+    }
 
   MTL::RenderPipelineState* render_context_metal::_get_render_pipeline_state(int32_t vertex_shader_handle, int32_t fragment_shader_handle, int32_t color_pixel_format, int32_t depth_pixel_format)
     {
@@ -1227,11 +1269,11 @@ namespace RenderDoos
         descr->colorAttachments()->object(0)->setAlphaBlendOperation(MTL::BlendOperationAdd);
         descr->colorAttachments()->object(0)->setRgbBlendOperation(MTL::BlendOperationAdd);
 
-        descr->colorAttachments()->object(0)->setSourceRGBBlendFactor(MTL::BlendFactorSourceAlpha);
-        descr->colorAttachments()->object(0)->setSourceAlphaBlendFactor(MTL::BlendFactorOne);
+        descr->colorAttachments()->object(0)->setSourceRGBBlendFactor(convert(_blending_source));
+        descr->colorAttachments()->object(0)->setSourceAlphaBlendFactor(convert(_blending_source));
 
-        descr->colorAttachments()->object(0)->setDestinationRGBBlendFactor(MTL::BlendFactorOneMinusSourceAlpha);
-        descr->colorAttachments()->object(0)->setDestinationAlphaBlendFactor(MTL::BlendFactorOne);
+        descr->colorAttachments()->object(0)->setDestinationRGBBlendFactor(convert(_blending_destination));
+        descr->colorAttachments()->object(0)->setDestinationAlphaBlendFactor(convert(_blending_destination));
 
         descr->setDepthAttachmentPixelFormat(_convert(depth_pixel_format));
 
