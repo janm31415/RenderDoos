@@ -82,6 +82,8 @@ namespace RenderDoos
       virtual void remove_query(int32_t handle);
       virtual void query_timestamp(int32_t handle);
       virtual uint64_t get_query_result(int32_t handle);
+      
+      virtual void set_blending_enabled(bool enable);
 
     private:
       void _allocate_geometry_buffer(geometry_ref& ref, int32_t tuple_size, int32_t count, int32_t type, void** pointer);
@@ -92,6 +94,7 @@ namespace RenderDoos
       MTL::ComputePipelineState* _get_compute_pipeline_state(int32_t compute_shader_handle);
       
       int32_t _add_texture(int32_t w, int32_t h, int32_t format, const void* data, int32_t flags, int32_t bytes_per_channel);
+      
     private:
       MTL::Device* mp_device;
       MTL::Library* mp_default_library;
@@ -105,6 +108,7 @@ namespace RenderDoos
       std::vector<uint8_t> _raw_uniforms;
       MTL::DepthStencilState* mp_depth_stencil_state;
       renderpass_descriptor m_current_renderpass_descriptor;
+      bool _enable_blending;
       
       struct RenderPipelineStateCache
       {

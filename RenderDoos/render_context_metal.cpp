@@ -41,7 +41,7 @@ static uniform_alignment uniform_type_to_alignment[] =
 
 render_context_metal::render_context_metal(MTL::Device* device, MTL::Library* library) : render_context(), mp_device(device), mp_default_library(nullptr),
 mp_command_queue(nullptr), mp_drawable(nullptr), mp_command_buffer(nullptr), mp_render_command_encoder(nullptr), mp_screen(nullptr),
-mp_depth_stencil_state(nullptr), mp_compute_command_encoder(nullptr)
+mp_depth_stencil_state(nullptr), mp_compute_command_encoder(nullptr), _enable_blending(false)
 {
   memset(m_pipeline_state_cache, 0, sizeof(RenderPipelineStateCache)*MAX_PIPELINESTATE_CACHE);
   memset(m_compute_pipeline_state_cache, 0, sizeof(ComputePipelineStateCache)*MAX_PIPELINESTATE_CACHE);
@@ -1192,6 +1192,7 @@ MTL::RenderPipelineState* render_context_metal::_get_render_pipeline_state(int32
       descr->setVertexFunction(vertex_function);
       descr->setFragmentFunction(fragment_function);
       descr->colorAttachments()->object(0)->setPixelFormat(_convert(color_pixel_format));
+      descr->colorAttachments()->object(0)->setBlendingEnabled(_enable_blending);
       descr->setDepthAttachmentPixelFormat(_convert(depth_pixel_format));
       
       NS::Error* err;
@@ -1401,6 +1402,11 @@ uint64_t render_context_metal::get_query_result(int32_t handle)
   if (q->mode == 0)
     return 0xffffffffffffffff;
   return q->metal_timestamp;
+}
+
+void render_context_metal::set_blending_enabled(bool enable)
+{
+  _enable_blending = enable;
 }
 
 } // namespace RenderDoos
