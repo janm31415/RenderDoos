@@ -1241,6 +1241,30 @@ namespace RenderDoos
         }
         return factor;
       }
+      
+    MTL::BlendOperation convert(blending_equation_type func)
+      {
+      MTL::BlendOperation f = MTL::BlendOperationAdd;
+      switch (func)
+        {
+        case blending_equation_type::add:
+          f = MTL::BlendOperationAdd;
+          break;
+        case blending_equation_type::subtract:
+          f = MTL::BlendOperationSubtract;
+          break;
+        case blending_equation_type::reverse_subtract:
+          f = MTL::BlendOperationReverseSubtract;
+          break;
+        case blending_equation_type::minimum:
+          f = MTL::BlendOperationMin;
+          break;
+        case blending_equation_type::maximum:
+          f = MTL::BlendOperationMax;
+          break;
+        }
+      return f;
+      }
     }
 
   MTL::RenderPipelineState* render_context_metal::_get_render_pipeline_state(int32_t vertex_shader_handle, int32_t fragment_shader_handle, int32_t color_pixel_format, int32_t depth_pixel_format)
@@ -1267,8 +1291,8 @@ namespace RenderDoos
         descr->colorAttachments()->object(0)->setPixelFormat(_convert(color_pixel_format));
         descr->colorAttachments()->object(0)->setBlendingEnabled(_enable_blending);
 
-        descr->colorAttachments()->object(0)->setAlphaBlendOperation(MTL::BlendOperationAdd);
-        descr->colorAttachments()->object(0)->setRgbBlendOperation(MTL::BlendOperationAdd);
+        descr->colorAttachments()->object(0)->setAlphaBlendOperation(convert(_blending_func));
+        descr->colorAttachments()->object(0)->setRgbBlendOperation(convert(_blending_func));
 
         descr->colorAttachments()->object(0)->setSourceRGBBlendFactor(convert(_blending_source));
         descr->colorAttachments()->object(0)->setSourceAlphaBlendFactor(convert(_blending_source));
