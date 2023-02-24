@@ -365,7 +365,12 @@ bool render_context_metal::update_texture(int32_t handle, const uint8_t* data)
     
     return true;
   }
-  
+  else if (tex->format == texture_format_r8ui || tex->format == texture_format_r8i)
+  {
+    MTL::Texture* p_tex = (MTL::Texture*)tex->metal_texture;
+    p_tex->replaceRegion(MTL::Region(0, 0, tex->w, tex->h), 0, data, tex->w*sizeof(uint8_t));
+    return true;
+  }
   return false;
 }
 
@@ -715,7 +720,7 @@ void render_context_metal::get_data_from_texture(int32_t handle, void* data, int
 
 int32_t render_context_metal::add_geometry(int32_t vertex_declaration_type)
 {
-  if (vertex_declaration_type < 1 || vertex_declaration_type > 3)
+  if (vertex_declaration_type < VERTEX_STANDARD || vertex_declaration_type > VERTEX_2_2_3)
     return -1;
   geometry_handle* gh = _geometry_handles;
   for (int32_t i = 0; i < MAX_GEOMETRY; ++i)
@@ -724,7 +729,24 @@ int32_t render_context_metal::add_geometry(int32_t vertex_declaration_type)
     {
       memset(gh, 0, sizeof(*gh));
       //gh->vertex_size = gl_buffer_declaration_table[vertex_declaration_type].size;
-      gh->vertex_size = 32;
+      switch (vertex_declaration_type)
+        {
+        case VERTEX_STANDARD:
+          gh->vertex_size = 32;
+          break;
+        case VERTEX_COMPACT:
+          gh->vertex_size = 16;
+          break;
+        case VERTEX_COLOR:
+          gh->vertex_size = 28;
+          break;
+        case VERTEX_2_2_3:
+          gh->vertex_size = 28;
+          break;
+        default:
+          gh->vertex_size = 32;
+          break;
+        }
       gh->vertex_declaration_type = vertex_declaration_type;
       gh->mode = GEOMETRY_ALLOCATED;
       gh->locked = 0;
@@ -1193,6 +1215,16 @@ MTL::RenderPipelineState* render_context_metal::_get_render_pipeline_state(int32
       descr->setFragmentFunction(fragment_function);
       descr->colorAttachments()->object(0)->setPixelFormat(_convert(color_pixel_format));
       descr->colorAttachments()->object(0)->setBlendingEnabled(_enable_blending);
+      
+      descr->colorAttachments()->object(0)->setAlphaBlendOperation(MTL::BlendOperationAdd);
+      descr->colorAttachments()->object(0)->setRgbBlendOperation(MTL::BlendOperationAdd);
+      
+      descr->colorAttachments()->object(0)->setSourceRGBBlendFactor(MTL::BlendFactorSourceAlpha);
+      descr->colorAttachments()->object(0)->setSourceAlphaBlendFactor(MTL::BlendFactorOne);
+      
+      descr->colorAttachments()->object(0)->setDestinationRGBBlendFactor(MTL::BlendFactorOneMinusSourceAlpha);
+      descr->colorAttachments()->object(0)->setDestinationAlphaBlendFactor(MTL::BlendFactorOne);
+      
       descr->setDepthAttachmentPixelFormat(_convert(depth_pixel_format));
       
       NS::Error* err;
