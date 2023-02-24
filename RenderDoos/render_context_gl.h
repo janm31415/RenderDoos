@@ -76,6 +76,8 @@ namespace RenderDoos
       virtual void query_timestamp(int32_t handle);
       virtual uint64_t get_query_result(int32_t handle);
 
+      virtual void set_blending_enabled(bool enable);
+
     private:
       void _clear(int32_t flags, uint32_t color);
       void _bind_frame_buffer(int32_t handle, int32_t channel, int32_t flags = TEX_WRAP_REPEAT | TEX_FILTER_LINEAR);

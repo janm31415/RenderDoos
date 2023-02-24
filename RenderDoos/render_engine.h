@@ -106,6 +106,9 @@ namespace RenderDoos
       const float4& get_light_pos() const { return _mv_props.light_pos; }
       const model_view_properties& get_model_view_properties() const { return _mv_props; }
 
+      void set_blending_enabled(bool enable);
+
+
     private:
       void _check_context();
 

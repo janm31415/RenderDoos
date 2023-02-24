@@ -324,4 +324,9 @@ namespace RenderDoos
     return _context->get_query_result(handle);
     }
 
+  void render_engine::set_blending_enabled(bool enable)
+    {
+    _context->set_blending_enabled(enable);
+    }
+
   } // namespace RenderDoos

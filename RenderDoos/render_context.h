@@ -42,6 +42,8 @@ namespace RenderDoos
 #define VERTEX_STANDARD  1   // pos,normal,tex0
 #define VERTEX_COMPACT   2   // pos,color
 #define VERTEX_COLOR     3   // pos,normal,color
+#define VERTEX_3_3_2     1   // 3 floats / 3 floats / 2 floats
+#define VERTEX_2_2_3     4   // 2 floats / 2 floats / 3 floats
 
 #define SHADER_VERTEX 1
 #define SHADER_FRAGMENT 2
@@ -311,6 +313,8 @@ namespace RenderDoos
       virtual void remove_query(int32_t handle) = 0;
       virtual void query_timestamp(int32_t handle) = 0;
       virtual uint64_t get_query_result(int32_t handle) = 0;
+
+      virtual void set_blending_enabled(bool enable) = 0;
 
     protected:
       texture _textures[MAX_TEXTURE];

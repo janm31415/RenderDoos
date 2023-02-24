@@ -85,6 +85,14 @@ namespace RenderDoos
           { 0, 0, 0, 0, 0} // end
       };
 
+    static gl_buffer_declaration gl_buffer_declaration_2_2_3[] =
+      {
+          { 0, GL_FLOAT, 0, 2, sizeof(GLfloat) * 7}, // a b
+          { 1, GL_FLOAT, sizeof(GLfloat) * 2, 2, sizeof(GLfloat) * 7}, // c d
+          { 2, GL_FLOAT, sizeof(GLfloat) * 4, 3, sizeof(GLfloat) * 7}, // e f g
+          { 0, 0, 0, 0, 0} // end
+      };
+
     struct gl_buffer_declaration_table_struct
       {
       int32_t size;                       // size in bytes
@@ -97,6 +105,7 @@ namespace RenderDoos
         {32, gl_buffer_declaration_standard},
         {16, gl_buffer_declaration_compact},
         {28, gl_buffer_declaration_color},
+        {28, gl_buffer_declaration_2_2_3},
       };
     }
 
@@ -199,6 +208,18 @@ namespace RenderDoos
       glPixelStorei(GL_PACK_ALIGNMENT, 1);
       glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // opengl by default aligns rows on 4 bytes I think    
       glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, tex->w, tex->h, GL_RGBA, GL_UNSIGNED_BYTE, data);
+      glCheckError();
+      return true;
+      }
+    else if (tex->format == texture_format_r8ui || tex->format == texture_format_r8i)
+      {
+      glBindTexture(GL_TEXTURE_2D, tex->gl_texture_id);
+      glPixelStorei(GL_PACK_ALIGNMENT, 1);
+      glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // opengl by default aligns rows on 4 bytes I think    
+      if (tex->format == texture_format_r8ui)
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, tex->w, tex->h, GL_RED_INTEGER, GL_UNSIGNED_BYTE, data);
+      else
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, tex->w, tex->h, GL_RED_INTEGER, GL_BYTE, data);
       glCheckError();
       return true;
       }
@@ -562,7 +583,7 @@ namespace RenderDoos
 
   int32_t render_context_gl::add_geometry(int32_t vertex_declaration_type)
     {
-    if (vertex_declaration_type < 1 || vertex_declaration_type > 3)
+    if (vertex_declaration_type < VERTEX_STANDARD || vertex_declaration_type > VERTEX_2_2_3)
       return -1;
     geometry_handle* gh = _geometry_handles;
     for (int32_t i = 0; i < MAX_GEOMETRY; ++i)
@@ -1448,6 +1469,20 @@ namespace RenderDoos
     // get query results
     glGetQueryObjectui64v(q->gl_query_id, GL_QUERY_RESULT, &tic);
     return tic;
+    }
+
+  void render_context_gl::set_blending_enabled(bool enable)
+    {
+    if (enable)
+      {
+      glEnable(GL_BLEND);
+      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      }
+    else
+      {
+      glDisable(GL_BLEND);
+      }
+    glCheckError();
     }
 
   } // namespace RenderDoos
