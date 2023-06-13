@@ -1526,5 +1526,10 @@ namespace RenderDoos
     {
     _blending_func = func;
     }
+    
+  void* render_context_metal::get_command_buffer()
+    {
+    return mp_command_buffer;
+    }
 
   } // namespace RenderDoos

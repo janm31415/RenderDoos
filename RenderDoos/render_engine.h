@@ -110,6 +110,8 @@ namespace RenderDoos
       void set_blending_function(blending_type source, blending_type destination);
       void set_blending_equation(blending_equation_type func);
 
+      void* get_command_buffer();
+
     private:
       void _check_context();
 

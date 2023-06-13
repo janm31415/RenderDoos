@@ -338,5 +338,10 @@ namespace RenderDoos
     {
     _context->set_blending_equation(func);
     }
+    
+  void* render_engine::get_command_buffer()
+    {
+    return _context->get_command_buffer();
+    }
 
   } // namespace RenderDoos
