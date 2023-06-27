@@ -87,6 +87,8 @@ namespace RenderDoos
       virtual void set_blending_function(blending_type source, blending_type destination);
       virtual void set_blending_equation(blending_equation_type func);
 
+      virtual void* get_command_buffer();
+      
     private:
       void _allocate_geometry_buffer(geometry_ref& ref, int32_t tuple_size, int32_t count, int32_t type, void** pointer);
       void _remove_geometry_buffer(geometry_ref& ref);

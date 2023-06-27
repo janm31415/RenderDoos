@@ -79,6 +79,9 @@ namespace RenderDoos
       virtual void set_blending_enabled(bool enable);
       virtual void set_blending_function(blending_type source, blending_type destination);
       virtual void set_blending_equation(blending_equation_type func);
+
+      virtual void* get_command_buffer();
+
     private:
       void _clear(int32_t flags, uint32_t color);
       void _bind_frame_buffer(int32_t handle, int32_t channel, int32_t flags = TEX_WRAP_REPEAT | TEX_FILTER_LINEAR);

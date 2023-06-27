@@ -341,6 +341,8 @@ namespace RenderDoos
       virtual void set_blending_function(blending_type source, blending_type destination) = 0;
       virtual void set_blending_equation(blending_equation_type func) = 0;
 
+      virtual void* get_command_buffer() = 0;
+
     protected:
       texture _textures[MAX_TEXTURE];
       geometry_handle _geometry_handles[MAX_GEOMETRY];

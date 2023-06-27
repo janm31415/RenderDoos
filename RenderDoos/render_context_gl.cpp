@@ -1569,4 +1569,9 @@ namespace RenderDoos
     glCheckError();
     }
 
+  void* render_context_gl::get_command_buffer()
+    {
+    return nullptr;
+    }
+
   } // namespace RenderDoos
