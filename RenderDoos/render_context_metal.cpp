@@ -44,6 +44,7 @@ namespace RenderDoos
     mp_depth_stencil_state(nullptr), mp_compute_command_encoder(nullptr), _enable_blending(false), _blending_source(blending_type::one), _blending_destination(blending_type::one),
     _blending_func(blending_equation_type::add)
     {
+    //mp_auto_release_pool = NS::AutoreleasePool::alloc()->init();
     memset(m_pipeline_state_cache, 0, sizeof(RenderPipelineStateCache) * MAX_PIPELINESTATE_CACHE);
     memset(m_compute_pipeline_state_cache, 0, sizeof(ComputePipelineStateCache) * MAX_PIPELINESTATE_CACHE);
     assert(mp_device != nullptr);
@@ -72,10 +73,12 @@ namespace RenderDoos
       if (m_compute_pipeline_state_cache[i].p_pipeline)
         m_compute_pipeline_state_cache[i].p_pipeline->release();
       }
+    //mp_auto_release_pool->release();
     }
 
   void render_context_metal::frame_begin(render_drawables drawables)
     {
+    mp_auto_release_pool = NS::AutoreleasePool::alloc()->init();
     mp_drawable = (MTL::Drawable*)drawables.metal_drawable;
     mp_screen = (MTL::Texture*)drawables.metal_screen_texture;
     dispatch_semaphore_wait(_semaphore, DISPATCH_TIME_FOREVER);
@@ -93,6 +96,8 @@ namespace RenderDoos
       mp_command_buffer->waitUntilCompleted();
     mp_drawable = nullptr;
     mp_command_buffer = nullptr;
+    mp_auto_release_pool->release();
+    mp_auto_release_pool = nullptr;
     }
 
   void render_context_metal::renderpass_begin(const renderpass_descriptor& descr)

@@ -106,6 +106,7 @@ namespace RenderDoos
       MTL::CommandBuffer* mp_command_buffer;
       MTL::RenderCommandEncoder* mp_render_command_encoder;
       MTL::ComputeCommandEncoder* mp_compute_command_encoder;
+      NS::AutoreleasePool* mp_auto_release_pool;
       dispatch_semaphore_t _semaphore;
       std::vector<uint8_t> _raw_uniforms;
       MTL::DepthStencilState* mp_depth_stencil_state;
