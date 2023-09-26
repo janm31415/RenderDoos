@@ -673,6 +673,13 @@ namespace RenderDoos
       MTL::Texture* p_tex = (MTL::Texture*)tex->metal_texture;
       p_tex->getBytes(data, tex->w * 4 * sizeof(uint8_t), MTL::Region(0, 0, tex->w, tex->h), 0);
       }
+    else if (tex->format == texture_format_bgra8)
+      {
+      if (size < tex->w * tex->h * 4)
+        return;
+      MTL::Texture* p_tex = (MTL::Texture*)tex->metal_texture;
+      p_tex->getBytes(data, tex->w * 4 * sizeof(uint8_t), MTL::Region(0, 0, tex->w, tex->h), 0);
+      }
     else if (tex->format == texture_format_rgba32f)
       {
       if (size < tex->w * tex->h * 4)
