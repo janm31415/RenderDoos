@@ -1173,6 +1173,22 @@ namespace RenderDoos
     shader_function->release();
     sh->type = 0;
     sh->compiled = 0;
+        
+    for (int32_t i = 0; i < MAX_PIPELINESTATE_CACHE; ++i)
+      {
+      if (m_pipeline_state_cache[i].p_pipeline)
+        {
+        if (m_pipeline_state_cache[i].fragment_shader_handle == handle || m_pipeline_state_cache[i].vertex_shader_handle == handle)
+          {
+          m_pipeline_state_cache[i].p_pipeline->release();
+          m_pipeline_state_cache[i].color_pixel_format = 0;
+          m_pipeline_state_cache[i].depth_pixel_format = 0;
+          m_pipeline_state_cache[i].fragment_shader_handle = 0;
+          m_pipeline_state_cache[i].vertex_shader_handle = 0;
+          m_pipeline_state_cache[i].p_pipeline = nullptr;
+          }
+        }
+      }
     }
 
   namespace
