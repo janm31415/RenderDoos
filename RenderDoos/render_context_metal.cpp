@@ -1188,6 +1188,15 @@ namespace RenderDoos
           m_pipeline_state_cache[i].p_pipeline = nullptr;
           }
         }
+      if (m_compute_pipeline_state_cache[i].p_pipeline)
+        {
+        if (m_compute_pipeline_state_cache[i].compute_shader_handle == handle)
+          {
+          m_compute_pipeline_state_cache[i].p_pipeline->release();
+          m_compute_pipeline_state_cache[i].compute_shader_handle = 0;
+          m_compute_pipeline_state_cache[i].p_pipeline = nullptr;
+          }
+        }
       }
     }
 
