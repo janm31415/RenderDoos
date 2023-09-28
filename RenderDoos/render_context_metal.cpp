@@ -10,6 +10,7 @@
 
 #include <cassert>
 #include <stdexcept>
+#include <string>
 
 namespace RenderDoos
   {
@@ -1152,6 +1153,11 @@ namespace RenderDoos
           shader_function = lib->newFunction(shader_name);
           options->release();
           lib->release();
+          if (error != NULL)
+            {
+            std::string log(error->localizedDescription()->utf8String());
+            throw std::runtime_error(log);
+            }
           }
         sh->metal_shader = (void*)shader_function;
         sh->compiled = 1;
