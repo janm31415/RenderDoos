@@ -923,7 +923,7 @@ namespace RenderDoos
       }
     }
 
-  void render_context_metal::bind_buffer_object(int32_t handle, int32_t channel)
+  void render_context_metal::bind_buffer_object(int32_t handle, int32_t channel, int32_t target)
     {
     if (handle < 0 || handle >= MAX_BUFFER_OBJECT)
       return;
@@ -933,19 +933,34 @@ namespace RenderDoos
       MTL::Buffer* p_buf = (MTL::Buffer*)buf->metal_buffer;
       if (mp_render_command_encoder)
         {
-        switch (buf->type)
+        if (target == BIND_TO_DEFAULT)
           {
-          case GEOMETRY_VERTEX:
-            mp_render_command_encoder->setVertexBuffer(p_buf, 0, channel);
-            break;
-          case GEOMETRY_INDEX:
-            mp_render_command_encoder->setFragmentBuffer(p_buf, 0, channel);
-            break;
-          case COMPUTE_BUFFER:
-            mp_render_command_encoder->setFragmentBuffer(p_buf, 0, channel);
-            break;
-          default:
-            break;
+          switch (buf->type)
+            {
+            case GEOMETRY_VERTEX:
+              mp_render_command_encoder->setVertexBuffer(p_buf, 0, channel);
+              break;
+            case GEOMETRY_INDEX:
+              mp_render_command_encoder->setFragmentBuffer(p_buf, 0, channel);
+              break;
+            case COMPUTE_BUFFER:
+              mp_render_command_encoder->setFragmentBuffer(p_buf, 0, channel);
+              break;
+            default:
+              break;
+            }
+          }
+        else
+          {
+          switch (target)
+            {
+            case BIND_TO_VERTEX_SHADER:
+              mp_render_command_encoder->setVertexBuffer(p_buf, 0, channel);
+              break;
+            case BIND_TO_FRAGMENT_SHADER:
+              mp_render_command_encoder->setFragmentBuffer(p_buf, 0, channel);
+              break;              
+            }
           }
         }
       if (mp_compute_command_encoder)
@@ -1097,7 +1112,7 @@ namespace RenderDoos
       }
     }
 
-  void render_context_metal::geometry_draw(int32_t handle)
+  void render_context_metal::geometry_draw(int32_t handle, int32_t instance_count)
     {
     if (!mp_render_command_encoder)
       return;
@@ -1123,7 +1138,7 @@ namespace RenderDoos
       {
       buffer_object* buf = &_buffer_objects[gh->index.buffer];
       MTL::Buffer* p_buffer = (MTL::Buffer*)buf->metal_buffer;
-      mp_render_command_encoder->drawIndexedPrimitives(MTL::PrimitiveTypeTriangle, gh->index.count, MTL::IndexTypeUInt32, p_buffer, 0);
+      mp_render_command_encoder->drawIndexedPrimitives(MTL::PrimitiveTypeTriangle, gh->index.count, MTL::IndexTypeUInt32, p_buffer, 0, instance_count, 0, 0);
       }
     }
 

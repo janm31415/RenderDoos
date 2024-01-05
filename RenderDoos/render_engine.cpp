@@ -189,9 +189,9 @@ namespace RenderDoos
     _context->update_buffer_object(handle, data, size);
     }
 
-  void render_engine::bind_buffer_object(int32_t handle, int32_t channel)
+  void render_engine::bind_buffer_object(int32_t handle, int32_t channel, int32_t target)
     {
-    _context->bind_buffer_object(handle, channel);
+    _context->bind_buffer_object(handle, channel, target);
     }
 
   void render_engine::get_data_from_buffer_object(int32_t handle, void* data, int32_t size)
@@ -209,9 +209,9 @@ namespace RenderDoos
     _context->geometry_end(handle);
     }
 
-  void render_engine::geometry_draw(int32_t handle)
+  void render_engine::geometry_draw(int32_t handle, int32_t instance_count)
     {
-    _context->geometry_draw(handle);
+    _context->geometry_draw(handle, instance_count);
     }
 
   int32_t render_engine::add_render_buffer()

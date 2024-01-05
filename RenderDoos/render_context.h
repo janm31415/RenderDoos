@@ -52,6 +52,10 @@ namespace RenderDoos
 #define CLEAR_COLOR 1
 #define CLEAR_DEPTH 2
 
+#define BIND_TO_DEFAULT 0
+#define BIND_TO_VERTEX_SHADER 1
+#define BIND_TO_FRAGMENT_SHADER 2
+
   enum class blending_type
     {
     zero,
@@ -303,7 +307,7 @@ namespace RenderDoos
       virtual int32_t add_buffer_object(const void* data, int32_t size, int32_t buffer_type = COMPUTE_BUFFER) = 0;
       virtual void remove_buffer_object(int32_t handle) = 0;
       virtual void update_buffer_object(int32_t handle, const void* data, int32_t size) = 0;
-      virtual void bind_buffer_object(int32_t handle, int32_t channel) = 0;
+      virtual void bind_buffer_object(int32_t handle, int32_t channel, int32_t target) = 0;
       virtual void get_data_from_buffer_object(int32_t handle, void* data, int32_t size) = 0;
       virtual const buffer_object* get_buffer_object(int32_t handle) const = 0;
       virtual void copy_buffer_object_data(int32_t source_handle, int32_t destination_handle, uint32_t read_offset, uint32_t write_offset, uint32_t size) = 0;
@@ -316,7 +320,7 @@ namespace RenderDoos
 
       virtual void geometry_begin(int32_t handle, int32_t number_of_vertices, int32_t number_of_indices, float** vertex_pointer, void** index_pointer, int32_t update) = 0;
       virtual void geometry_end(int32_t handle) = 0;
-      virtual void geometry_draw(int32_t handle) = 0;
+      virtual void geometry_draw(int32_t handle, int32_t instance_count) = 0;
 
       virtual int32_t add_shader(const char* source, int32_t type, const char* name) = 0;
       virtual void remove_shader(int32_t handle) = 0;

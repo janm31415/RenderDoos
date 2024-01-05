@@ -59,7 +59,7 @@ namespace RenderDoos
       int32_t add_buffer_object(const void* data, int32_t size, int32_t buffer_type = COMPUTE_BUFFER);
       void remove_buffer_object(int32_t handle);
       void update_buffer_object(int32_t handle, const void* data, int32_t size);
-      void bind_buffer_object(int32_t handle, int32_t channel);
+      void bind_buffer_object(int32_t handle, int32_t channel, int32_t target = BIND_TO_DEFAULT);
       void get_data_from_buffer_object(int32_t handle, void* data, int32_t size);
       const buffer_object* get_buffer_object(int32_t handle) const;
       void copy_buffer_object_data(int32_t source_handle, int32_t destination_handle, uint32_t read_offset, uint32_t write_offset, uint32_t size);
@@ -75,7 +75,7 @@ namespace RenderDoos
 
       void geometry_begin(int32_t handle, int32_t number_of_vertices, int32_t number_of_indices, float** vertex_pointer, void** index_pointer, int32_t update = 3);
       void geometry_end(int32_t handle);
-      void geometry_draw(int32_t handle);
+      void geometry_draw(int32_t handle, int32_t instance_count = 1);
 
       int32_t add_shader(const char* source, int32_t type, const char* name);
       void remove_shader(int32_t handle);

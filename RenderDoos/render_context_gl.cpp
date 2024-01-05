@@ -683,7 +683,7 @@ namespace RenderDoos
       }
     }
 
-  void render_context_gl::bind_buffer_object(int32_t handle, int32_t channel)
+  void render_context_gl::bind_buffer_object(int32_t handle, int32_t channel, int32_t target)
     {
     if (handle < 0 || handle >= MAX_BUFFER_OBJECT)
       return;
@@ -892,7 +892,7 @@ namespace RenderDoos
       }
     }
 
-  void render_context_gl::geometry_draw(int32_t handle)
+  void render_context_gl::geometry_draw(int32_t handle, int32_t instance_count)
     {
     if (handle < 0 || handle >= MAX_GEOMETRY)
       return;
