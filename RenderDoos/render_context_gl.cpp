@@ -935,7 +935,10 @@ namespace RenderDoos
     glCheckError();
 
     glEnable(GL_DEPTH_TEST);
-    glDrawElements(GL_TRIANGLES, gh->index.count, GL_UNSIGNED_INT, 0);
+    if (instance_count < 2)
+      glDrawElements(GL_TRIANGLES, gh->index.count, GL_UNSIGNED_INT, 0);
+    else
+      glDrawElementsInstanced(GL_TRIANGLES, gh->index.count, GL_UNSIGNED_INT, 0, instance_count);
 
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
