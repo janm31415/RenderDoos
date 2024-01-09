@@ -320,7 +320,7 @@ namespace RenderDoos
 
       virtual void geometry_begin(int32_t handle, int32_t number_of_vertices, int32_t number_of_indices, float** vertex_pointer, void** index_pointer, int32_t update) = 0;
       virtual void geometry_end(int32_t handle) = 0;
-      virtual void geometry_draw(int32_t handle, int32_t instance_count, bool enable_depth_testing) = 0;
+      virtual void geometry_draw(int32_t handle, int32_t instance_count) = 0;
 
       virtual int32_t add_shader(const char* source, int32_t type, const char* name) = 0;
       virtual void remove_shader(int32_t handle) = 0;

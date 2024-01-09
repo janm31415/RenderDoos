@@ -125,7 +125,7 @@ namespace RenderDoos
           {
           MTL::Texture* depth = (MTL::Texture*)(get_texture(p_framebuffer->depth_texture_handle)->metal_texture);
           p_descriptor->depthAttachment()->setTexture(depth);
-          has_depth = true;
+            has_depth = true;
           }
         }
       else
@@ -1112,7 +1112,7 @@ namespace RenderDoos
       }
     }
 
-  void render_context_metal::geometry_draw(int32_t handle, int32_t instance_count, bool enable_depth_testing)
+  void render_context_metal::geometry_draw(int32_t handle, int32_t instance_count)
     {
     if (!mp_render_command_encoder)
       return;

@@ -133,6 +133,7 @@ namespace RenderDoos
 
   void render_context_gl::renderpass_begin(const renderpass_descriptor& descr)
     {
+    m_current_renderpass_descriptor = descr;
     if (descr.compute_shader)
       {
       return;
@@ -892,7 +893,7 @@ namespace RenderDoos
       }
     }
 
-  void render_context_gl::geometry_draw(int32_t handle, int32_t instance_count, bool enable_depth_testing)
+  void render_context_gl::geometry_draw(int32_t handle, int32_t instance_count)
     {
     if (handle < 0 || handle >= MAX_GEOMETRY)
       return;
@@ -934,7 +935,7 @@ namespace RenderDoos
       }
     glCheckError();
 
-    if (enable_depth_testing)
+    if (m_current_renderpass_descriptor.depth_texture_handle >= 0)
       glEnable(GL_DEPTH_TEST);
     else
       glDisable(GL_DEPTH_TEST);

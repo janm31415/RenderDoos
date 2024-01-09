@@ -209,9 +209,9 @@ namespace RenderDoos
     _context->geometry_end(handle);
     }
 
-  void render_engine::geometry_draw(int32_t handle, int32_t instance_count, bool enable_depth_testing)
+  void render_engine::geometry_draw(int32_t handle, int32_t instance_count)
     {
-    _context->geometry_draw(handle, instance_count, enable_depth_testing);
+    _context->geometry_draw(handle, instance_count);
     }
 
   int32_t render_engine::add_render_buffer()
