@@ -1112,7 +1112,7 @@ namespace RenderDoos
       }
     }
 
-  void render_context_metal::geometry_draw(int32_t handle, int32_t instance_count)
+  void render_context_metal::geometry_draw(int32_t handle, int32_t instance_count, bool enable_depth_testing)
     {
     if (!mp_render_command_encoder)
       return;
