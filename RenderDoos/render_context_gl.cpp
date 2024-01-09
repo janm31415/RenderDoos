@@ -892,7 +892,7 @@ namespace RenderDoos
       }
     }
 
-  void render_context_gl::geometry_draw(int32_t handle, int32_t instance_count)
+  void render_context_gl::geometry_draw(int32_t handle, int32_t instance_count, bool enable_depth_testing)
     {
     if (handle < 0 || handle >= MAX_GEOMETRY)
       return;
@@ -934,7 +934,10 @@ namespace RenderDoos
       }
     glCheckError();
 
-    glEnable(GL_DEPTH_TEST);
+    if (enable_depth_testing)
+      glEnable(GL_DEPTH_TEST);
+    else
+      glDisable(GL_DEPTH_TEST);
     if (instance_count < 2)
       glDrawElements(GL_TRIANGLES, gh->index.count, GL_UNSIGNED_INT, 0);
     else
