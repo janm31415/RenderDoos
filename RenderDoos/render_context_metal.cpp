@@ -854,12 +854,15 @@ namespace RenderDoos
     if (handle < 0 || handle >= MAX_FRAMEBUFFER)
       return;
     frame_buffer* fb = &_frame_buffers[handle];
-    if (fb->texture_handle < 0)
-      return;
-    remove_texture(fb->texture_handle);
-    remove_render_buffer(fb->render_buffer_handle);
+    if (fb->texture_handle >= 0)
+      remove_texture(fb->texture_handle);
+    if (fb->depth_texture_handle >= 0)
+      remove_texture(fb->depth_texture_handle);
+    if (fb->render_buffer_handle >= 0)
+      remove_render_buffer(fb->render_buffer_handle);
 
     fb->texture_handle = -1;
+    fb->depth_texture_handle = -1;
     fb->render_buffer_handle = -1;
     }
 
