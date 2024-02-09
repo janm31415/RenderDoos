@@ -57,7 +57,7 @@ namespace RenderDoos
       virtual const buffer_object* get_buffer_object(int32_t handle) const;
       virtual void copy_buffer_object_data(int32_t source_handle, int32_t destination_handle, uint32_t read_offset, uint32_t write_offset, uint32_t size);
       
-      virtual int32_t add_frame_buffer(int32_t w, int32_t h, bool make_depth_texture);
+      virtual int32_t add_frame_buffer(int32_t w, int32_t h, bool make_depth_texture, int32_t usage_flags);
       virtual void remove_frame_buffer(int32_t handle);
       virtual const frame_buffer* get_frame_buffer(int32_t handle) const;
 

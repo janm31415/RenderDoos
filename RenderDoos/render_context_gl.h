@@ -52,7 +52,7 @@ namespace RenderDoos
 
       virtual void dispatch_compute(int32_t num_groups_x, int32_t num_groups_y, int32_t num_groups_z, int32_t local_size_x, int32_t local_size_y, int32_t local_size_z);
 
-      virtual int32_t add_frame_buffer(int32_t w, int32_t h, bool make_depth_texture);
+      virtual int32_t add_frame_buffer(int32_t w, int32_t h, bool make_depth_texture, int32_t usage_flags);
       virtual void remove_frame_buffer(int32_t handle);
       virtual const frame_buffer* get_frame_buffer(int32_t handle) const;
 

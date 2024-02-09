@@ -980,7 +980,7 @@ namespace RenderDoos
     rb->type = 0;
     }
 
-  int32_t render_context_gl::add_frame_buffer(int32_t w, int32_t h, bool make_depth_texture)
+  int32_t render_context_gl::add_frame_buffer(int32_t w, int32_t h, bool make_depth_texture, int32_t usage_flags)
     {
     frame_buffer* fb = _frame_buffers;
     for (int32_t i = 0; i < MAX_FRAMEBUFFER; ++i)
@@ -989,9 +989,9 @@ namespace RenderDoos
         {
         fb->w = w;
         fb->h = h;
-        fb->texture_handle = add_texture(w, h, texture_format_rgba8, (const uint16_t*)nullptr, TEX_USAGE_RENDER_TARGET | TEX_USAGE_READ);
+        fb->texture_handle = add_texture(w, h, texture_format_rgba8, (const uint16_t*)nullptr, usage_flags);
         if (make_depth_texture)
-          fb->depth_texture_handle = add_texture(w, h, texture_format_depth, (const uint16_t*)nullptr, TEX_USAGE_RENDER_TARGET);
+          fb->depth_texture_handle = add_texture(w, h, texture_format_depth, (const uint16_t*)nullptr, usage_flags);
         else
           fb->render_buffer_handle = add_render_buffer();
         if (fb->texture_handle < 0)

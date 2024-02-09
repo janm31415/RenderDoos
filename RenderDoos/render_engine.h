@@ -69,8 +69,8 @@ namespace RenderDoos
       int32_t add_render_buffer();
       void remove_render_buffer(int32_t handle);
 
-      int32_t add_frame_buffer(int32_t w, int32_t h, bool make_depth_texture);
-      void remove_frame_buffer(int32_t handle);      
+      int32_t add_frame_buffer(int32_t w, int32_t h, bool make_depth_texture, int32_t usage_flags = TEX_USAGE_READ | TEX_USAGE_RENDER_TARGET);
+      void remove_frame_buffer(int32_t handle);
       const frame_buffer* get_frame_buffer(int32_t handle) const;
 
       void geometry_begin(int32_t handle, int32_t number_of_vertices, int32_t number_of_indices, float** vertex_pointer, void** index_pointer, int32_t update = 3);

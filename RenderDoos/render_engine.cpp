@@ -224,9 +224,9 @@ namespace RenderDoos
     _context->remove_render_buffer(handle);
     }
 
-  int32_t render_engine::add_frame_buffer(int32_t w, int32_t h, bool make_depth_texture)
+  int32_t render_engine::add_frame_buffer(int32_t w, int32_t h, bool make_depth_texture, int32_t usage_flags)
     {
-    return _context->add_frame_buffer(w, h, make_depth_texture);
+    return _context->add_frame_buffer(w, h, make_depth_texture, usage_flags);
     }
 
   const frame_buffer* render_engine::get_frame_buffer(int32_t handle) const
