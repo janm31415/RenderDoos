@@ -686,22 +686,7 @@ namespace RenderDoos
       if (size < tex->w * tex->h * 4)
         return;
       MTL::Texture* p_tex = (MTL::Texture*)tex->metal_texture;
-      float* bytes = new float[tex->w * tex->h * 4];
-      p_tex->getBytes(bytes, tex->w * 4 * sizeof(float), MTL::Region(0, 0, tex->w, tex->h), 0);
-      uint8_t* d = (uint8_t*)data;
-      float* b = bytes;
-      for (int y = 0; y < tex->h; ++y)
-        {
-        for (int x = 0; x < tex->w; ++x)
-          {
-          *d++ = (uint8_t)(*b++ * 255.f);
-          *d++ = (uint8_t)(*b++ * 255.f);
-          *d++ = (uint8_t)(*b++ * 255.f);
-          *d++ = (uint8_t)(*b++ * 255.f);
-          }
-        }
-
-      delete[] bytes;
+      p_tex->getBytes(data, tex->w * 4 * sizeof(float), MTL::Region(0, 0, tex->w, tex->h), 0);      
       }
     else if (tex->format == texture_format_rgba16)
       {
