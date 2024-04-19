@@ -660,12 +660,12 @@ namespace RenderDoos
   void render_context_metal::get_data_from_texture(int32_t handle, void* data, int32_t size)
     {
     if (handle < 0 || handle >= MAX_TEXTURE)
-      return false;
+      return;
     if (data == nullptr)
-      return false;
+      return;
     texture* tex = &_textures[handle];
     if (tex->flags == 0)
-      return false;
+      return;
 
     if (tex->format == texture_format_rgba8)
       {
