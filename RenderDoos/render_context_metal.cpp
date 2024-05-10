@@ -378,6 +378,23 @@ namespace RenderDoos
       p_tex->replaceRegion(MTL::Region(0, 0, tex->w, tex->h), 0, data, tex->w * sizeof(uint8_t));
       return true;
       }
+    else if (tex->format == texture_format_rgba16)
+      {
+      uint16_t* bytes = new uint16_t[tex->w * tex->h * 4];
+      const uint8_t* s = (const uint8_t*)data;
+      uint16_t* d = bytes;
+      for (int y = 0; y < tex->h; ++y)
+        {
+        for (int x = 0; x < tex->w * 4; ++x, ++d, ++s)
+          {
+          *d = ((uint16_t)*s) << 8;
+          }
+        }
+      MTL::Texture* p_tex = (MTL::Texture*)tex->metal_texture;
+      p_tex->replaceRegion(MTL::Region(0, 0, tex->w, tex->h), 0, bytes, tex->w * 4 * sizeof(uint16_t));
+      delete[] bytes;
+      return true;
+      }
     return false;
     }
 
