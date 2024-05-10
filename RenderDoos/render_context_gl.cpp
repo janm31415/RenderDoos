@@ -246,10 +246,10 @@ namespace RenderDoos
         {
         for (int x = 0; x < tex->w; ++x, ++d, s += 4)
           {
-          *d = (((s[0] >> 7) & 0xff)) |
-            (((s[1] >> 7) & 0xff) << 8) |
-            (((s[2] >> 7) & 0xff) << 16) |
-            (((s[3] >> 7) & 0xff) << 24);
+          *d = (((s[0] >> 8) & 0xff)) |
+            (((s[1] >> 8) & 0xff) << 8) |
+            (((s[2] >> 8) & 0xff) << 16) |
+            (((s[3] >> 8) & 0xff) << 24);
           }
         }
       glBindTexture(GL_TEXTURE_2D, tex->gl_texture_id);
@@ -269,7 +269,7 @@ namespace RenderDoos
         {
         for (int x = 0; x < tex->w * 4; ++x, ++d, ++s)
           {
-          *d = (*s & 0x7fff) * 2;
+          *d = (*s & 0xffff);
           }
         }
       glBindTexture(GL_TEXTURE_2D, tex->gl_texture_id);

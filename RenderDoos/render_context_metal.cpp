@@ -437,10 +437,10 @@ namespace RenderDoos
         {
         for (int x = 0; x < tex->w; ++x)
           {
-          *d++ = ((*s++ >> 7) & 0xff);
-          *d++ = ((*s++ >> 7) & 0xff);
-          *d++ = ((*s++ >> 7) & 0xff);
-          *d++ = ((*s++ >> 7) & 0xff);
+          *d++ = ((*s++ >> 8) & 0xff);
+          *d++ = ((*s++ >> 8) & 0xff);
+          *d++ = ((*s++ >> 8) & 0xff);
+          *d++ = ((*s++ >> 8) & 0xff);
           }
         }
 
@@ -459,10 +459,10 @@ namespace RenderDoos
         {
         for (int x = 0; x < tex->w; ++x)
           {
-          *d++ = ((*s++ >> 7) & 0xff) / 255.f;
-          *d++ = ((*s++ >> 7) & 0xff) / 255.f;
-          *d++ = ((*s++ >> 7) & 0xff) / 255.f;
-          *d++ = ((*s++ >> 7) & 0xff) / 255.f;
+          *d++ = ((*s++) & 0xffff) / (static_cast<float>(0xffff));
+          *d++ = ((*s++) & 0xffff) / (static_cast<float>(0xffff));
+          *d++ = ((*s++) & 0xffff) / (static_cast<float>(0xffff));
+          *d++ = ((*s++) & 0xffff) / (static_cast<float>(0xffff));
           }
         }
 
@@ -481,7 +481,7 @@ namespace RenderDoos
         {
         for (int x = 0; x < tex->w * 4; ++x, ++d, ++s)
           {
-          *d = (*s & 0x7fff) * 2;
+          *d = (*s & 0xffff);
           }
         }
       MTL::Texture* p_tex = (MTL::Texture*)tex->metal_texture;
@@ -498,10 +498,10 @@ namespace RenderDoos
         {
         for (int x = 0; x < tex->w; ++x)
           {
-          *d++ = ((*s++ >> 7) & 0xff);
-          *d++ = ((*s++ >> 7) & 0xff);
-          *d++ = ((*s++ >> 7) & 0xff);
-          *d++ = ((*s++ >> 7) & 0xff);
+          *d++ = ((*s++ >> 8) & 0xff);
+          *d++ = ((*s++ >> 8) & 0xff);
+          *d++ = ((*s++ >> 8) & 0xff);
+          *d++ = ((*s++ >> 8) & 0xff);
           }
         }
 
