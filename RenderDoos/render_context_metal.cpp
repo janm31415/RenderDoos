@@ -907,7 +907,7 @@ namespace RenderDoos
     if (buf->size > 0)
       {
       MTL::Buffer* p_buf = (MTL::Buffer*)buf->metal_buffer;
-      assert(0); // todo
+      memcpy(p_buf->contents(), data, size);
       }
     }
 
