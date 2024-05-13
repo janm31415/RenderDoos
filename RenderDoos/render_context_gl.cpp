@@ -224,6 +224,26 @@ namespace RenderDoos
       glCheckError();
       return true;
       }
+    else if (tex->format == texture_format_rgba16)
+    {
+      uint16_t* bytes = new uint16_t[tex->w * tex->h * 4];
+      const uint8_t* s = (const uint8_t*)data;
+      uint16_t* d = bytes;
+      for (int y = 0; y < tex->h; ++y)
+      {
+        for (int x = 0; x < tex->w * 4; ++x, ++d, ++s)
+        {
+          *d = (((uint16_t)*s) << 8);
+        }
+      }
+      glBindTexture(GL_TEXTURE_2D, tex->gl_texture_id);
+      glPixelStorei(GL_PACK_ALIGNMENT, 1);
+      glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // opengl by default aligns rows on 4 bytes I think    
+      glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, tex->w, tex->h, GL_RGBA, GL_UNSIGNED_SHORT, bytes);
+      delete[] bytes;
+      glCheckError();
+      return true;
+    }
     return false;
     }
 
