@@ -689,14 +689,18 @@ namespace RenderDoos
         {
         case ATOMIC_COUNTER_BUFFER:
           glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, buf->gl_buffer_id);
-          if (size != buf->size)
+          if (size > buf->size) {
             glBufferData(GL_ATOMIC_COUNTER_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
+            buf->size = size;
+          }
           glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, size, data);
           break;
         default:
           glBindBuffer(GL_SHADER_STORAGE_BUFFER, buf->gl_buffer_id);
-          if (size != buf->size)
+          if (size > buf->size) {
             glBufferData(GL_SHADER_STORAGE_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
+            buf->size = size;
+          }
           glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, size, data);
           break;
         }
