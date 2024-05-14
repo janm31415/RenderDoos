@@ -916,7 +916,7 @@ namespace RenderDoos
     buf->type = 0;
     }
 
-  void render_context_metal::update_buffer_object(int32_t handle, const void* data, int32_t size)
+  void render_context_metal::update_buffer_object(int32_t handle, const void* data, int32_t size, int32_t offset)
     {
     if (handle < 0 || handle >= MAX_BUFFER_OBJECT)
       return;
@@ -924,7 +924,7 @@ namespace RenderDoos
     if (buf->size > 0)
       {
       MTL::Buffer* p_buf = (MTL::Buffer*)buf->metal_buffer;
-      memcpy(p_buf->contents(), data, size);
+      memcpy((void*)((uint8_t*)p_buf->contents()+offset), data, size);
       }
     }
 

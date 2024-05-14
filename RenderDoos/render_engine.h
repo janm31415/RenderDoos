@@ -58,7 +58,7 @@ namespace RenderDoos
 
       int32_t add_buffer_object(const void* data, int32_t size, int32_t buffer_type = COMPUTE_BUFFER);
       void remove_buffer_object(int32_t handle);
-      void update_buffer_object(int32_t handle, const void* data, int32_t size);
+      void update_buffer_object(int32_t handle, const void* data, int32_t size, int32_t offset = 0);
       void bind_buffer_object(int32_t handle, int32_t channel, int32_t target = BIND_TO_DEFAULT);
       void get_data_from_buffer_object(int32_t handle, void* data, int32_t size);
       const buffer_object* get_buffer_object(int32_t handle) const;

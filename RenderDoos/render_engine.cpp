@@ -184,9 +184,9 @@ namespace RenderDoos
     return _context->get_buffer_object(handle);
     }
 
-  void render_engine::update_buffer_object(int32_t handle, const void* data, int32_t size)
+  void render_engine::update_buffer_object(int32_t handle, const void* data, int32_t size, int32_t offset)
     {
-    _context->update_buffer_object(handle, data, size);
+    _context->update_buffer_object(handle, data, size, offset);
     }
 
   void render_engine::bind_buffer_object(int32_t handle, int32_t channel, int32_t target)
