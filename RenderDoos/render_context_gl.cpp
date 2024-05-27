@@ -678,7 +678,7 @@ namespace RenderDoos
     buf->type = 0;
     }
 
-  void render_context_gl::update_buffer_object(int32_t handle, const void* data, int32_t size)
+  void render_context_gl::update_buffer_object(int32_t handle, const void* data, int32_t size, int32_t offset)
     {
     if (handle < 0 || handle >= MAX_BUFFER_OBJECT)
       return;
@@ -693,7 +693,7 @@ namespace RenderDoos
             glBufferData(GL_ATOMIC_COUNTER_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
             buf->size = size;
           }
-          glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, size, data);
+          glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, offset, size, data);
           break;
         default:
           glBindBuffer(GL_SHADER_STORAGE_BUFFER, buf->gl_buffer_id);
@@ -701,7 +701,7 @@ namespace RenderDoos
             glBufferData(GL_SHADER_STORAGE_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
             buf->size = size;
           }
-          glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, size, data);
+          glBufferSubData(GL_SHADER_STORAGE_BUFFER, offset, size, data);
           break;
         }
       glCheckError();
