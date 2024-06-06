@@ -395,6 +395,23 @@ namespace RenderDoos
       delete[] bytes;
       return true;
       }
+    else if (tex->format == texture_format_rgba32f)
+      {
+      float* bytes = new float[tex->w * tex->h * 4];
+      const uint8_t* s = (const uint8_t*)data;
+      float* d = bytes;
+      for (int y = 0; y < tex->h; ++y)
+        {
+        for (int x = 0; x < tex->w*4; ++x, ++d, ++s)
+          {
+          *d = (float)(*s)/255.f;
+          }
+        }
+      MTL::Texture* p_tex = (MTL::Texture*)tex->metal_texture;
+      p_tex->replaceRegion(MTL::Region(0, 0, tex->w, tex->h), 0, bytes, tex->w * 4 * sizeof(float));
+      delete[] bytes;
+      return true;
+      }
     return false;
     }
 
@@ -415,7 +432,13 @@ namespace RenderDoos
 
       return true;
       }
+    else if (tex->format == texture_format_rgba32f) {
 
+      MTL::Texture* p_tex = (MTL::Texture*)tex->metal_texture;
+      p_tex->replaceRegion(MTL::Region(0, 0, tex->w, tex->h), 0, data, tex->w * 4 * sizeof(float));
+
+      return true;
+      }
     return false;
     }
 
