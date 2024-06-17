@@ -17,7 +17,7 @@ namespace RenderDoos
       {
       GL_RGBA8, // proxy for texture_format_none
       GL_RGBA8, // texture_format_rgba8
-      GL_RGBA8, // texture_format_rgba32f
+      GL_RGBA32F, // texture_format_rgba32f
       GL_RGBA8, // texture_format_bgra8
       GL_RGBA8UI, // texture_format_rgba8ui
       GL_R32UI, //texture_format_r32ui
@@ -240,6 +240,25 @@ namespace RenderDoos
       glPixelStorei(GL_PACK_ALIGNMENT, 1);
       glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // opengl by default aligns rows on 4 bytes I think    
       glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, tex->w, tex->h, GL_RGBA, GL_UNSIGNED_SHORT, bytes);
+      delete[] bytes;
+      glCheckError();
+      return true;
+    } else if (tex->format == texture_format_rgba32f)
+    {
+      float* bytes = new float[tex->w * tex->h * 4];
+      const uint8_t* s = (const uint8_t*)data;
+      float* d = bytes;
+      for (int y = 0; y < tex->h; ++y)
+      {
+        for (int x = 0; x < tex->w * 4; ++x, ++d, ++s)
+        {
+          *d = ((float)*s)/255.f;
+        }
+      }
+      glBindTexture(GL_TEXTURE_2D, tex->gl_texture_id);
+      glPixelStorei(GL_PACK_ALIGNMENT, 1);
+      glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // opengl by default aligns rows on 4 bytes I think    
+      glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, tex->w, tex->h, GL_RGBA, GL_FLOAT, bytes);
       delete[] bytes;
       glCheckError();
       return true;
