@@ -190,6 +190,15 @@ namespace RenderDoos
       glCheckError();
       return true;
       }
+    else if (tex->format == texture_format_rgba32f)
+    {
+      glBindTexture(GL_TEXTURE_2D, tex->gl_texture_id);
+      glPixelStorei(GL_PACK_ALIGNMENT, 1);
+      glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // opengl by default aligns rows on 4 bytes I think    
+      glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, tex->w, tex->h, GL_RGBA, GL_FLOAT, data);
+      glCheckError();
+      return true;
+    }
     return false;
     }
 
@@ -519,6 +528,16 @@ namespace RenderDoos
       glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_SHORT, (void*)data);
       glCheckError();
       }
+    else if (tex->format == texture_format_rgba32f)
+    {
+      if (size < tex->w * tex->h * 16)
+        return;
+      glBindTexture(GL_TEXTURE_2D, tex->gl_texture_id);
+      glPixelStorei(GL_PACK_ALIGNMENT, 1);
+      glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // opengl by default aligns rows on 4 bytes I think
+      glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_FLOAT, (void*)data);
+      glCheckError();
+    }
     else if (tex->format == texture_format_rgba8ui)
       {
       if (size < tex->w * tex->h * 4)
