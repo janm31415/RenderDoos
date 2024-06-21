@@ -173,9 +173,10 @@ namespace RenderDoos
 
   int32_t render_context_metal::_add_texture(int32_t w, int32_t h, int32_t format, const void* data, int32_t usage_flags, int32_t bytes_per_channel)
     {
-    texture* tex = _textures;
-    for (int32_t i = 0; i < MAX_TEXTURE; ++i)
+    for (int32_t counter = 0; counter < MAX_TEXTURE; ++counter)
       {
+      int32_t i = (_last_assigned_texture_id + 1 + counter) % MAX_TEXTURE;
+      texture* tex = _textures + i;
       if (tex->flags == 0)
         {
         tex->w = w;
@@ -245,9 +246,9 @@ namespace RenderDoos
           update_texture(i, (const uint8_t*)data);
         else
           update_texture(i, (const uint16_t*)data);
+        _last_assigned_texture_id = i;
         return i;
         }
-      ++tex;
       }
     return -1;
     }

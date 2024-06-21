@@ -135,6 +135,9 @@ namespace RenderDoos
       };
       
       ComputePipelineStateCache m_compute_pipeline_state_cache[MAX_PIPELINESTATE_CACHE];
+      
+      
+      int32_t _last_assigned_texture_id = -1; // auxiliaury variable for faster finding of a valid texture spot
     };
 
   }

@@ -8,7 +8,7 @@
 namespace RenderDoos
   {
 
-#define MAX_TEXTURE 1024
+#define MAX_TEXTURE 8096
 #define MAX_GEOMETRY 1024
 #define MAX_BUFFER_OBJECT 2048
 #define MAX_SHADER 1024
