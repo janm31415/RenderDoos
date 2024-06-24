@@ -669,10 +669,11 @@ namespace RenderDoos
   int32_t render_context_gl::add_buffer_object(const void* data, int32_t size, int32_t buffer_type)
     {
     if (size <= 0)
-      return -1;
-    buffer_object* buf = _buffer_objects;
-    for (int32_t i = 0; i < MAX_BUFFER_OBJECT; ++i)
+      return -1;    
+    for (int32_t counter = 0; counter < MAX_BUFFER_OBJECT; ++counter)
       {
+      int32_t i = (_last_assigned_buffer_object_id + 1 + counter) % MAX_BUFFER_OBJECT;
+      buffer_object* buf = _buffer_objects + i;
       if (buf->size == 0)
         {
         buf->size = size;
@@ -694,9 +695,9 @@ namespace RenderDoos
             assert(0);
           }
         glCheckError();
+        _last_assigned_buffer_object_id = i;
         return i;
-        }
-      ++buf;
+        }      
       }
     return -1;
     }

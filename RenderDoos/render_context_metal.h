@@ -138,6 +138,7 @@ namespace RenderDoos
       
       
       int32_t _last_assigned_texture_id = -1; // auxiliaury variable for faster finding of a valid texture spot
+      int32_t _last_assigned_buffer_object_id = -1; // auxiliaury variable for faster finding of a valid buffer object spot
     };
 
   }
