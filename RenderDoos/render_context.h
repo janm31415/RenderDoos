@@ -297,6 +297,7 @@ namespace RenderDoos
       virtual void bind_texture_to_channel(int32_t handle, int32_t channel, int32_t flags) = 0;
       virtual const texture* get_texture(int32_t handle) const = 0;
       virtual void get_data_from_texture(int32_t handle, void* data, int32_t size) = 0;
+      virtual void copy_texture_data(int32_t source_handle, int32_t destination_handle) = 0;      
       
       virtual int32_t add_geometry(int32_t vertex_declaration_type) = 0; // VERTEX_STANDARD or VERTEX_COMPACT or VERTEX_COLOR
       virtual void remove_geometry(int32_t handle) = 0;

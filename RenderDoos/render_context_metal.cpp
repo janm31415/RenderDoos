@@ -766,6 +766,20 @@ namespace RenderDoos
       }
     }
 
+  void render_context_metal::copy_texture_data(int32_t source_handle, int32_t destination_handle) {
+    if (source_handle < 0 || source_handle >= MAX_TEXTURE)
+      return;
+    texture* src = &_textures[source_handle];
+    texture* dst = &_textures[destination_handle];
+    MTL::Texture* p_tex_src = (MTL::Texture*)src->metal_texture;
+    MTL::Texture* p_tex_dst = (MTL::Texture*)dst->metal_texture;
+    MTL::CommandBuffer* p_command_buffer = mp_command_queue->commandBuffer();
+    MTL::BlitCommandEncoder* p_blit = p_command_buffer->blitCommandEncoder();
+    p_blit->copyFromTexture(p_tex_src, 0, 0, MTL::Origin(0,0,0), MTL::Size(p_tex_src->width(), p_tex_src->height(), 1), p_tex_dst, 0, 0,  MTL::Origin(0,0,0));
+    p_blit->endEncoding();
+    p_command_buffer->commit();  
+  }
+
   int32_t render_context_metal::add_geometry(int32_t vertex_declaration_type)
     {
     if (vertex_declaration_type < VERTEX_STANDARD || vertex_declaration_type > VERTEX_2_2_3)
@@ -1030,7 +1044,7 @@ namespace RenderDoos
     {
     if (source_handle < 0 || source_handle >= MAX_BUFFER_OBJECT)
       return;
-    if (read_offset < 0 || read_offset >= MAX_BUFFER_OBJECT)
+    if (read_offset < 0)
       return;
     buffer_object* src = &_buffer_objects[source_handle];
     buffer_object* dst = &_buffer_objects[destination_handle];

@@ -42,6 +42,7 @@ namespace RenderDoos
       virtual void bind_texture_to_channel(int32_t handle, int32_t channel, int32_t flags = TEX_WRAP_REPEAT | TEX_FILTER_LINEAR);
       virtual const texture* get_texture(int32_t handle) const;
       virtual void get_data_from_texture(int32_t handle, void* data, int32_t size);
+      virtual void copy_texture_data(int32_t source_handle, int32_t destination_handle);
 
       virtual int32_t add_geometry(int32_t vertex_declaration_type); // VERTEX_STANDARD or VERTEX_COMPACT
       virtual void remove_geometry(int32_t handle);

@@ -148,6 +148,10 @@ namespace RenderDoos
     {
     _context->get_data_from_texture(handle, data, size);
     }
+    
+  void render_engine::copy_texture_data(int32_t source_handle, int32_t destination_handle) {
+    _context->copy_texture_data(source_handle, destination_handle);
+  }
 
   void render_engine::bind_texture_to_channel(int32_t handle, int32_t channel, int32_t flags)
     {
