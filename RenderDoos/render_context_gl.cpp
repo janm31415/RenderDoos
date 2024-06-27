@@ -587,6 +587,20 @@ namespace RenderDoos
       }
     }
 
+  void render_context_gl::copy_texture_data(int32_t source_handle, int32_t destination_handle)
+    {
+    if (source_handle < 0 || source_handle >= MAX_TEXTURE)
+      return;
+    texture* src = &_textures[source_handle];
+    texture* dst = &_textures[destination_handle];
+
+    glBindTexture(GL_TEXTURE_2D, dst->gl_texture_id);
+
+    glCopyTextureSubImage2D(src->gl_texture_id, 0, 0, 0, 0, 0, src->w, src->h);
+    
+    glCheckError();
+    }
+
   void render_context_gl::bind_texture_to_channel(int32_t handle, int32_t channel, int32_t flags)
     {
     if (handle < 0 || handle >= MAX_TEXTURE)
@@ -788,7 +802,7 @@ namespace RenderDoos
     {
     if (source_handle < 0 || source_handle >= MAX_BUFFER_OBJECT)
       return;
-    if (read_offset < 0 || read_offset >= MAX_BUFFER_OBJECT)
+    if (read_offset < 0)
       return;
     buffer_object* src = &_buffer_objects[source_handle];
     buffer_object* dst = &_buffer_objects[destination_handle];
