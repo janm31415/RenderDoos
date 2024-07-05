@@ -594,10 +594,8 @@ namespace RenderDoos
     texture* src = &_textures[source_handle];
     texture* dst = &_textures[destination_handle];
 
-    glBindTexture(GL_TEXTURE_2D, dst->gl_texture_id);
+    glCopyImageSubData(src->gl_texture_id, GL_TEXTURE_2D, 0, 0, 0, 0, dst->gl_texture_id, GL_TEXTURE_2D, 0, 0, 0, 0, src->w, src->h, 1);
 
-    glCopyTextureSubImage2D(src->gl_texture_id, 0, 0, 0, 0, 0, src->w, src->h);
-    
     glCheckError();
     }
 
